@@ -37,6 +37,7 @@ spec:
   selector:
     app: songsinkapi
 ---
+#songsinksocket
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -114,4 +115,161 @@ spec:
       port: 6001
   selector:
     app: battleship
+---
+#battleshipsocket
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: battleshipsocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: battleshipsocket
+  template:
+    metadata:
+      labels:
+        app: battleshipsocket
+    spec:
+      containers:
+      - name: battleshipsocket
+        image: 210628utanet/battleshipsocket:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: battleshipsocket
+spec:
+  ports:
+    - targetPort: 3000
+      port: 6002
+  selector:
+    app: battleshipsocket
+---
+
+#dotnetroyale
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dotnetroyale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dotnetroyale
+  template:
+    metadata:
+      labels:
+        app: dotnetroyale
+    spec:
+      containers:
+      - name: dotnetroyale
+        image: 210628utanet/dotnetroyale:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotnetroyale
+spec:
+  ports:
+    - targetPort: 5000
+      port: 7001
+  selector:
+    app: dotnetroyale
+---
+#dotnetroyalesocket
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dotnetroyalsocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dotnetroyalsocket
+  template:
+    metadata:
+      labels:
+        app: dotnetroyalsocket
+    spec:
+      containers:
+      - name: dotnetroyalsocket
+        image: 210628utanet/dotnetroyalsocket:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotnetroyalsocket
+spec:
+  ports:
+    - targetPort: 3000
+      port: 7002
+  selector:
+    app: dotnetroyalsocket
+---
+#hubapi
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hubapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hubapi
+  template:
+    metadata:
+      labels:
+        app: hubapi
+    spec:
+      containers:
+      - name: hubapi
+        image: 210628utanet/hubapi:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hubapi
+spec:
+  ports:
+    - targetPort: 5000
+      port: 8001
+  selector:
+    app: hubapi
 ---
