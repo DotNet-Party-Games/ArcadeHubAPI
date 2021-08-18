@@ -23,6 +23,7 @@ spec:
                 name: songsinkapi
                 port:
                   number: 5001
+          #Songs Ink Socket
           - path: /songsinksocket/?(.*)
             pathType: Prefix
             backend:
@@ -30,6 +31,46 @@ spec:
                 name: songsinksocket
                 port:
                   number: 5002
-          
           #Battleship
+          - path: /battleshipapi/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: battleship
+                port:
+                  number: 6001
+          #Battleship Socket
+          - path: /battleshipsocket/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: battleshipsocket
+                port:
+                  number: 6002
+          #dotnetroyale
+          - path: /dotnetroyaleapi/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: dotnetroyale
+                port:
+                  number: 7001
+          #dotnetroyale Socket
+          - path: /dotnetroyalesocket/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: dotnetroyalsocket
+                port:
+                  number: 7002
+          #hubapi
+          - path: /hubapi/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: hubapi
+                port:
+                  number: 8001
+
+
           
