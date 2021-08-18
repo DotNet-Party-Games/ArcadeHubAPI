@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songsinkapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: songsinkapi
+  template:
+    metadata:
+      labels:
+        app: songsinkapi
+    spec:
+      containers:
+      - name: songsinkapi
+        image: 210628utanet/songsinkapi:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: songsinkapi
+spec:
+  ports:
+    - targetPort: 80
+      port: 5001
+  selector:
+    app: songsinkapi
+---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: angular
+# spec:
+#   replicas: 3
+#   selector:
+#     matchLabels:
+#       app: angular
+#   template:
+#     metadata:
+#       labels:
+#         app: angular
+#     spec:
+#       containers:
+#       - name: angular
+#         image: scifiler/rrangular2:latestv2
+#         resources:
+#           requests:
+#             cpu: 100m
+#             memory: 128Mi
+#           limits:
+#             cpu: 250m
+#             memory: 256Mi
+#         ports:
+#         - containerPort: 80
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: angular
+# spec:
+#   type: LoadBalancer
+#   ports:
+#   - targetPort: 80 
+#     port: 4200
+#   selector:
+#     app: angular
