@@ -1,3 +1,4 @@
+#SongsInk
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,41 +37,81 @@ spec:
   selector:
     app: songsinkapi
 ---
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: angular
-# spec:
-#   replicas: 3
-#   selector:
-#     matchLabels:
-#       app: angular
-#   template:
-#     metadata:
-#       labels:
-#         app: angular
-#     spec:
-#       containers:
-#       - name: angular
-#         image: scifiler/rrangular2:latestv2
-#         resources:
-#           requests:
-#             cpu: 100m
-#             memory: 128Mi
-#           limits:
-#             cpu: 250m
-#             memory: 256Mi
-#         ports:
-#         - containerPort: 80
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: angular
-# spec:
-#   type: LoadBalancer
-#   ports:
-#   - targetPort: 80 
-#     port: 4200
-#   selector:
-#     app: angular
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: songsinksocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: songsinksocket
+  template:
+    metadata:
+      labels:
+        app: songsinksocket
+    spec:
+      containers:
+      - name: songsinksocket
+        image: 210628utanet/songsinksocket:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: songsinksocket
+spec:
+  ports:
+    - targetPort: 3000
+      port: 5002
+  selector:
+    app: songsinksocket
+---
+
+#Battleship
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: battleship
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: battleship
+  template:
+    metadata:
+      labels:
+        app: battleship
+    spec:
+      containers:
+      - name: battleship
+        image: 210628utanet/battleship:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: battleship
+spec:
+  ports:
+    - targetPort: 5000
+      port: 6001
+  selector:
+    app: battleship
+---
