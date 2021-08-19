@@ -4,10 +4,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HubEntities.Database {
     public class Leaderboard {
+        public Leaderboard() {
+            Scores = new HashSet<UserScore>();
+        }
+
         [Key]
         public string Id { get; set; }
 
-        public List<UserScore> Scores;
+        public ICollection<UserScore> Scores;
     }
 
 }

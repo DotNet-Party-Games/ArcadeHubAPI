@@ -7,7 +7,6 @@ using HubEntities.Database;
 namespace HubBL {
     public class MessageManager {
         private readonly IDatabase<ChatMessage> _messageDB;
-        private readonly IList<string> _includes;
 
         public MessageManager(IDatabase<ChatMessage> messageDB) {
             _messageDB = messageDB;
