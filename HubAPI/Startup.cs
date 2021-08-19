@@ -28,7 +28,6 @@ namespace HubAPI {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HubAPI", Version = "v1" });
             });
 
-
             services.AddCors( builder => {
                     builder.AddDefaultPolicy((policy) => {
                         policy.WithOrigins("")
