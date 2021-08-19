@@ -34,7 +34,7 @@ namespace HubAPI {
                 {
                     builder.AddDefaultPolicy((policy) =>
                             {
-                                policy.WithOrigins("")
+                                policy.WithOrigins("http://127.0.0.1:4200","http://20.185.11.71/")
                                        .AllowAnyHeader()
                                        .AllowAnyMethod();
                             }
