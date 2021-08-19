@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace HubEntities.Database {
-    public class User {
+    public class UserScore {
         [Key]
-        public string Email { get; set; }
+        public string UserEmail { get; set; }
 
-        public List<Team> Teams { get; set; }
+        public int Score { get; set; }
     }
 
 }

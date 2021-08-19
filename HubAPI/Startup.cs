@@ -28,17 +28,13 @@ namespace HubAPI {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HubAPI", Version = "v1" });
             });
 
-
-            services.AddCors(
-                (builder) =>
-                {
-                    builder.AddDefaultPolicy((policy) =>
-                            {
-                                policy.WithOrigins("http://127.0.0.1:4200","http://20.185.11.71/")
-                                       .AllowAnyHeader()
-                                       .AllowAnyMethod();
-                            }
-                    );
+            services.AddCors( builder => {
+                    builder.AddDefaultPolicy((policy) => {
+                        policy.WithOrigins("")
+                               .AllowAnyHeader()
+                               .AllowAnyMethod()
+                               .AllowCredentials();
+                    });
                 }
             );
         }
@@ -51,6 +47,8 @@ namespace HubAPI {
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HubAPI v1"));
             }
 
+            app.UseCors();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -59,6 +57,7 @@ namespace HubAPI {
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chat");
             });
         }
     }
