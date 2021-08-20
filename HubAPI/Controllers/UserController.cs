@@ -22,12 +22,12 @@ namespace HubAPI.Controllers
 
         //This return User object if exist
         [HttpGet("login/{p_email}")]
-        public async Task<IActionResult> LogIn(string p_email)
+        public async Task<IActionResult> LogIn([FromRoute] string p_email)
         {
             return Ok();
         }
 
-        [HttpPut("editProfile")]
+        [HttpPost("edit")]
         public async Task<IActionResult> EditProfile([FromBody] User p_user)
         {
             return Ok(await _userManager.EditProfile(p_user));

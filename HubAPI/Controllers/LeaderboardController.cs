@@ -20,13 +20,13 @@ namespace HubAPI.Controllers
         }
 
         [HttpGet("getIndividualLeaderboard/{p_gameType}")]
-        public async Task<IActionResult> GetIndividualLeaderboard(string p_gameType)
+        public async Task<IActionResult> GetIndividualLeaderboard([FromRoute] string p_gameType)
         {
             return Ok();
         }
 
         [HttpGet("getTeamLeaderboard/{p_gameType}")]
-        public async Task<IActionResult> GetTeamLeaderboard(string p_gameType)
+        public async Task<IActionResult> GetTeamLeaderboard([FromRoute]string p_gameType)
         {
             return Ok();
         }
