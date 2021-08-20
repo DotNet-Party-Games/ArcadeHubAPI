@@ -20,32 +20,35 @@ namespace HubAPI.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateTeam(string p_userEmail, [FromBody] Team team)
+        public async Task<IActionResult> CreateTeam([FromBody] Team team)
         {
-            return Ok();
+            return Ok(await _teamManager.CreateTeam(team));
         }
 
-        [HttpPut("join")]
-        public async Task<IActionResult> JoinTeam(string p_userEmail, string p_teamName)
+        [HttpPut("join/{p_userEmail}/{p_teamName}")]
+        public async Task<IActionResult> JoinRequest(string p_userEmail, string p_teamName)
         {
-            return Ok();
+            return Ok(await _teamManager.CreateRequest(p_userEmail, p_teamName));
         }
 
-        //public async Task<IActionResult> JoinRequest()
-        //{
 
-        //}
+        //Not sure about this method
+        [HttpPut("joinDecision/{p_requestId}/{p_approve}")]
+        public async Task<IActionResult> JoinDecision(string p_requestId, bool p_approve)
+        {
+            return Ok(await _teamManager.ApproveOrDenyRequest(p_requestId, p_approve));
+        }
 
-        [HttpPut("leave")]
+        [HttpPut("leave/{p_userEmail}/{p_teamName}")]
         public async Task<IActionResult> LeaveTeam(string p_userEmail, string p_teamName)
         {
-            return Ok();
+            return Ok(await _teamManager.LeaveTeam(p_userEmail, p_teamName));
         }
 
-        [HttpDelete("disband/{p_teamName}")]
-        public async Task<IActionResult> DisbandTeam([FromRoute] string p_teamName)
+        [HttpDelete("disband/{p_teamOwner}/{p_teamName}")]
+        public async Task<IActionResult> DisbandTeam([FromRoute] string p_teamOwner, string p_teamName )
         {
-            return Ok();
+            return Ok(await _teamManager.DisbandTeam(p_teamOwner, p_teamName));
         }
     }
 }
