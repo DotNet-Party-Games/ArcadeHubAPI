@@ -16,6 +16,14 @@ namespace HubBL {
             return await _userDB.Create(user);
         }
 
+        public async Task<User> GetUser(string userId) {
+            return await _userDB.FindSingle(new() {
+                Conditions = new List<Func<User, bool>> {
+                    u => u.Email == userId
+                }
+            });
+        }
+
         public async Task<bool> EditProfile(User user) {
             return await _userDB.Update(user);
         }
