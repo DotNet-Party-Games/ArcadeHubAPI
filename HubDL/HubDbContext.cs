@@ -4,11 +4,11 @@ using HubEntities.Database;
 namespace HubDL {
     public class HubDbContext: DbContext {
         public HubDbContext(): base() { }
-        public HubDbContext(DbContextOptions options) : base() { }
+        public HubDbContext(DbContextOptions options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Leaderboard> Leaderboards { get; set; }
-        public DbSet<TeamLeaderboard> TeamLeaderBoards { get; set; }
+        public DbSet<TeamLeaderboard> TeamLeaderboards { get; set; }
         public DbSet<UserScore> UserScores { get; set; }
         public DbSet<TeamScore> TeamScores { get; set; }
         public DbSet<Team> Teams { get; set; }
