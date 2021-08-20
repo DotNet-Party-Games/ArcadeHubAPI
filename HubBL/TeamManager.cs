@@ -48,12 +48,29 @@ namespace HubBL {
         public async Task<TeamJoinRequest> CreateRequest(string teamName, string userId) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+
+            //Check if team exists
+            Team targetTeam = await _teamDB.FindSingle(new() {
+                Conditions = new List<Func<Team, bool>> {
+                    t => t.Name == teamName
+                }
+            });
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
+
+            //Check if user exists
+            User targetUser= await _userDB.FindSingle(new() {
+                Conditions = new List<Func<User, bool>> {
+                    u => u.Email == userId
+                }
+            });
+            if (targetUser == null) throw new ArgumentException($"Unable to load user with id \"{userId}\"");
+
             //Check if user has already requested to join team
             TeamJoinRequest request = await _joinRequestDB.FindSingle(new() {
-                Conditions = new List<Func<TeamJoinRequest, bool>> {
-                    r => r.UserId == userId,
-                    r => r.TeamName == teamName
-                }
+            Conditions = new List<Func<TeamJoinRequest, bool>> {
+                r => r.UserId == userId,
+                r => r.TeamName == teamName
+            }
             });
 
             if (request != null) throw new ArgumentException($"The user \"{userId}\" already has a pending request to join this team");
