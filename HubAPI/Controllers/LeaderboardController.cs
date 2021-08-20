@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HubBL;
 
 namespace HubAPI.Controllers
 {
@@ -11,25 +12,23 @@ namespace HubAPI.Controllers
     [ApiController]
     public class LeaderboardController : ControllerBase
     {
-        private readonly ILeaderboardBL _LeaderboardBL;
-        private readonly ITeamLeaderboardBL _TeamLeaderboardBL;
+        private readonly LeaderboardManager _leaderboardManager;
 
-        public LeaderboardController(ILeaderboardBL p_LeaderboardBL, ITeamLeaderboardBL p_TeamLeaderboardBL)
+        public LeaderboardController(LeaderboardManager leaderboardManager)
         {
-            _LeaderboardBL = p_LeaderboardBL;
-            _TeamLeaderboardBL = p_TeamLeaderboardBL;
+            _leaderboardManager = leaderboardManager;
         }
 
         [HttpGet("getIndividualLeaderboard/{p_gameType}")]
-        public async Task<IActionResult> GetIndividualLeaderboard(string p_gameType)
+        public async Task<IActionResult> GetIndividualLeaderboard([FromRoute] string p_gameType)
         {
-
+            return Ok();
         }
 
         [HttpGet("getTeamLeaderboard/{p_gameType}")]
-        public async Task<IActionResult> GetTeamLeaderboard(string p_gameType)
+        public async Task<IActionResult> GetTeamLeaderboard([FromRoute]string p_gameType)
         {
-
+            return Ok();
         }
     }
 }

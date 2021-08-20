@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace HubEntities.Database {
     public class UserScore {
         [Key]
-        public string UserEmail { get; set; }
+        public string UserId { get; set; }
 
         public int Score { get; set; }
     }
