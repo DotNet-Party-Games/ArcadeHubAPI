@@ -11,6 +11,8 @@ namespace HubEntities.Database {
         [Key]
         public string Email { get; set; }
 
+        public string Username { get; set; }
+
         public ICollection <Team> Teams { get; set; }
     }
 

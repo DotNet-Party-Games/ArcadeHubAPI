@@ -12,7 +12,7 @@ namespace HubBL {
         private readonly IDatabase<TeamJoinRequest> _joinRequestDB;
         private readonly IList<string> _teamIncludes;
 
-        public TeamManager(IDatabase<Team> teamDB, IDatabase<TeamJoinRequest> joinRequestDB, 
+        public TeamManager(IDatabase<Team> teamDB, IDatabase<TeamJoinRequest> joinRequestDB,
             IDatabase<User> userDB) {
             _teamDB = teamDB;
             _userDB = userDB;
@@ -23,9 +23,26 @@ namespace HubBL {
             };
         }
 
-        public async Task<Team> CreateTeam(Team team) {
-            if (team == null) throw new ArgumentException("Missing parameter team");
-            return await _teamDB.Create(team);
+        public async Task<Team> CreateTeam(string teamName, string description, string ownerId) {
+            if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+            if (description == null) throw new ArgumentException("Missing parameter description");
+            if (ownerId == null) throw new ArgumentException("Missing parameter ownerId");
+
+            User owner = await _userDB.FindSingle(new() {
+                Conditions = new List<Func<User, bool>> {
+                    u => u.Email == ownerId
+                }
+            });
+            if (owner == null) throw new ArgumentException($"Unable to find user with id {ownerId}");
+
+            return await _teamDB.Create(new() {
+                Name = teamName,
+                Description = description,
+                TeamOwner = ownerId,
+                Users = new HashSet<User> {
+                    owner
+                }
+            });
         }
 
         public async Task<TeamJoinRequest> CreateRequest(string teamName, string userId) {
@@ -39,12 +56,25 @@ namespace HubBL {
                 }
             });
 
-            if (request != null) throw new ArgumentException(string.Format("The user \"{0}\" already has a pending request to join this team", userId));
+            if (request != null) throw new ArgumentException($"The user \"{userId}\" already has a pending request to join this team");
 
             //Create request
             return await _joinRequestDB.Create(new() {
                 TeamName = teamName,
                 UserId = userId
+            });
+        }
+
+        public async Task<IList<TeamJoinRequest>> GetRequestsByTeamName(string teamName) {
+            if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+
+            return await _joinRequestDB.Query(new() {
+                Conditions = new List<Func<TeamJoinRequest, bool>> {
+                    r => r.TeamName == teamName
+                },
+                Includes = new List<string> {
+                    "User"
+                }
             });
         }
 
@@ -57,7 +87,7 @@ namespace HubBL {
                 }
             });
 
-            if (request == null) throw new ArgumentException(string.Format("No request with id \"{0}\" could be found", requestId));
+            if (request == null) throw new ArgumentException($"No request with id \"{requestId}\" could be found");
 
             // Add User to team if approved
             if (approve) {
@@ -68,7 +98,7 @@ namespace HubBL {
                     },
                     Includes = _teamIncludes
                 });
-                if (targetTeam == null) throw new ArgumentException(string.Format("Unable to load team specified in request"));
+                if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{request.TeamName}\"specified in request");
 
                 //Get user
                 User targetUser = await _userDB.FindSingle(new() { 
@@ -96,7 +126,7 @@ namespace HubBL {
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException(string.Format("Unable to load team with name \"{0}\"", teamName));
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
 
             //Remove target user from team
             User targetUser = targetTeam.Users.SingleOrDefault(u => u.Email == userId);
@@ -118,10 +148,10 @@ namespace HubBL {
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException(string.Format("Unable to load team with name \"{0}\"", teamName));
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
 
             //Delete team if the user is the owner
-            if (targetTeam.TeamOwner != null && targetTeam.TeamOwner != userId) throw new ArgumentException(string.Format("User \"{0}\" is not the owner of this team.", userId));
+            if (targetTeam.TeamOwner != null && targetTeam.TeamOwner != userId) throw new ArgumentException($"User \"{userId}\" is not the owner of this team");
             return await _teamDB.Delete(targetTeam);
         }
     }
