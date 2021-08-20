@@ -1,4 +1,5 @@
 using HubDL;
+using HubBL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -43,6 +44,12 @@ namespace HubAPI {
             services.AddDbContext<HubDbContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("AzureDB"))
             );
+
+            services.AddScoped(typeof(IDatabase<>), typeof(HubDB<>));
+            services.AddScoped<LeaderboardManager>();
+            services.AddScoped<MessageManager>();
+            services.AddScoped<UserManager>();
+            services.AddScoped<TeamManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

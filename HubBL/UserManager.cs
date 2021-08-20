@@ -16,7 +16,7 @@ namespace HubBL {
             return await _userDB.Create(user);
         }
 
-        public async Task<bool> UpdateUser(User user) {
+        public async Task<bool> EditProfile(User user) {
             return await _userDB.Update(user);
         }
     }

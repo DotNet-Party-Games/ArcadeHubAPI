@@ -7,6 +7,8 @@ namespace HubEntities.Database {
         [Key]
         public string Name { get; set; }
 
+        public string TeamOwner { get; set; }
+
         public string Description { get; set; }
 
         public List<User> Users { get; set; }
