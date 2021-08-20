@@ -28,7 +28,7 @@ namespace HubBL {
             return await _teamDB.Create(team);
         }
 
-        public async Task<TeamJoinRequest> CreateRequest(string teamName, string userId) {
+        public async Task<TeamJoinRequest> CreateRequest(string userId, string teamName) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
             //Check if user has already requested to join team
