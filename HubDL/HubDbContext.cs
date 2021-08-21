@@ -15,13 +15,14 @@ namespace HubDL {
         public DbSet<TeamJoinRequest> TeamJoinRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            modelBuilder.Entity<User>();
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username).IsUnique();
             //modelBuilder.Entity<ChatMessage>();
             modelBuilder.Entity<Leaderboard>();
             modelBuilder.Entity<TeamLeaderboard>();
             modelBuilder.Entity<UserScore>();
             modelBuilder.Entity<TeamScore>();
-            modelBuilder.Entity<Team>();
+            modelBuilder.Entity<Team>().HasIndex(t => t.Name).IsUnique();
             modelBuilder.Entity<TeamJoinRequest>();
         }
     }

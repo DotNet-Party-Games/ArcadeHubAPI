@@ -28,7 +28,7 @@ namespace HubBL {
             });
         }
 
-        public async Task<bool> SubmitScore(string gameName, UserScore score) {
+        public async Task<Leaderboard> SubmitScore(string gameName, UserScore score) {
             if (gameName == null) throw new ArgumentException("Missing parameter gameName");
             if (score == null) throw new ArgumentException("Missing parameter score");
 
@@ -41,7 +41,8 @@ namespace HubBL {
 
             targetLeaderboard.Scores.Add(score);
 
-            return await _leaderboardDB.Save();
+            await _leaderboardDB.Save();
+            return targetLeaderboard;
         }
 
         public async Task<TeamLeaderboard> GetTeamLeaderboard(string gameName) {
@@ -55,7 +56,7 @@ namespace HubBL {
             });
         }
 
-        public async Task<bool> SubmitTeamScore(string teamName, TeamScore score) {
+        public async Task<TeamLeaderboard> SubmitTeamScore(string teamName, TeamScore score) {
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
             if (score == null) throw new ArgumentException("Missing parameter score");
 
@@ -68,7 +69,8 @@ namespace HubBL {
 
             targetLeaderboard.Scores.Add(score);
 
-            return await _teamLeaderboardDB.Save();
+            await _teamLeaderboardDB.Save();
+            return targetLeaderboard;
         }
     }
 }

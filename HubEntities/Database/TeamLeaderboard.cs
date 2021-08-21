@@ -11,7 +11,7 @@ namespace HubEntities.Database {
         [Key]
         public string Id { get; set; }
 
-        public ICollection<TeamScore> Scores;
+        public ICollection<TeamScore> Scores { get; set; }
     }
 
 }
