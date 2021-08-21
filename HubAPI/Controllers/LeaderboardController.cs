@@ -22,13 +22,13 @@ namespace HubAPI.Controllers
         [HttpGet("getIndividualLeaderboard/{p_gameType}")]
         public async Task<IActionResult> GetIndividualLeaderboard([FromRoute] string p_gameType)
         {
-            return Ok();
+            return Ok(await _leaderboardManager.GetLeaderboard(p_gameType));
         }
 
         [HttpGet("getTeamLeaderboard/{p_gameType}")]
         public async Task<IActionResult> GetTeamLeaderboard([FromRoute]string p_gameType)
         {
-            return Ok();
+            return Ok(await _leaderboardManager.GetTeamLeaderboard(p_gameType));
         }
     }
 }

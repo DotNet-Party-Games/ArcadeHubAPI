@@ -45,7 +45,7 @@ namespace HubBL {
             });
         }
 
-        public async Task<TeamJoinRequest> CreateRequest(string teamName, string userId) {
+        public async Task<TeamJoinRequest> CreateRequest(string userId, string teamName) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
 

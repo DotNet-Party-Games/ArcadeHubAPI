@@ -20,11 +20,16 @@ namespace HubAPI.Controllers
             _userManager = userManager;
         }
 
-        //This return User object if exist
+        [HttpGet("register")]
+        public async Task<IActionResult> Register([FromBody] User p_user)
+        {
+            return Ok(await _userManager.CreateUser(p_user));
+        }
+
         [HttpGet("login/{p_email}")]
         public async Task<IActionResult> LogIn([FromRoute] string p_email)
         {
-            return Ok();
+            return Ok(await _userManager.GetUser(p_email));
         }
 
         [HttpPost("edit")]
