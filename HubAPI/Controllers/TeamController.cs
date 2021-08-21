@@ -22,7 +22,8 @@ namespace HubAPI.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateTeam([FromBody] Team team)
         {
-            return Ok(await _teamManager.CreateTeam(team));
+            //return Ok(await _teamManager.CreateTeam(team));
+            return Ok();
         }
 
         [HttpPut("join/{p_userEmail}/{p_teamName}")]

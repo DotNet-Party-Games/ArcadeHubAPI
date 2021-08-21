@@ -5,36 +5,35 @@ using System.Linq;
 using System.Threading.Tasks;
 using HubBL;
 using HubEntities.Database;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
-namespace HubAPI.Controllers
-{
+namespace HubAPI.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
-    {
+    public class UserController : ControllerBase {
         private readonly UserManager _userManager;
-        public UserController(UserManager userManager)
-        {
+        public UserController(UserManager userManager) {
             _userManager = userManager;
         }
 
-        [HttpGet("register")]
-        public async Task<IActionResult> Register([FromBody] User p_user)
-        {
-            return Ok(await _userManager.CreateUser(p_user));
-        }
-
-        [HttpGet("login/{p_email}")]
-        public async Task<IActionResult> LogIn([FromRoute] string p_email)
-        {
-            return Ok(await _userManager.GetUser(p_email));
+        [Authorize]
+        [HttpGet("login")]
+        public async Task<IActionResult> Login() {
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            string email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            User targetUser = await _userManager.GetUser(email);
+            
+            //Returns the user if they exist or creates a new database entry if it doesn't
+            return Ok(targetUser ?? await _userManager.CreateUser(new() { 
+                Email = email,
+                Username = email,
+                ProfileImage = User.Claims.FirstOrDefault(c => c.Type == "picture")?.Value
+            }));
         }
 
         [HttpPost("edit")]
-        public async Task<IActionResult> EditProfile([FromBody] User p_user)
-        {
+        public async Task<IActionResult> EditProfile([FromBody] User p_user) {
             return Ok(await _userManager.EditProfile(p_user));
         }
     }
