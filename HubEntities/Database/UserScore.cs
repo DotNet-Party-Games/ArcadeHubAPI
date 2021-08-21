@@ -7,6 +7,8 @@ namespace HubEntities.Database {
     public class UserScore {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string Id { get; set; }
+
         public string UserId { get; set; }
 
         public int Score { get; set; }
