@@ -34,6 +34,7 @@ namespace HubBL {
                 }
             });
             if (owner == null) throw new ArgumentException($"Unable to find user with id {ownerId}");
+            if (owner.TeamId != null) throw new ArgumentException($"User is already a member of team \"{owner.TeamId}\"");
 
             return await _teamDB.Create(new() {
                 Name = teamName,
@@ -95,9 +96,10 @@ namespace HubBL {
             });
         }
 
-        public async Task<bool> ApproveOrDenyRequest(string requestId, bool approve = true) {
+        public async Task<bool> ApproveOrDenyRequest(string requestId, string ownerId, bool approve = true) {
             if (requestId == null) throw new ArgumentException("Missing parameter requestId");
-            //Check if user has already requested to join team
+            
+            //Search for request
             TeamJoinRequest request = await _joinRequestDB.FindSingle(new() {
                 Conditions = new List<Func<TeamJoinRequest, bool>> {
                     r => r.Id == requestId
@@ -116,6 +118,7 @@ namespace HubBL {
                     Includes = _teamIncludes
                 });
                 if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{request.TeamName}\"specified in request");
+                if (targetTeam.TeamOwner != ownerId) throw new ArgumentException($"User with ID \"{ownerId}\" cannot approve requests. Only the owner with ID \"{targetTeam.TeamOwner}\" can approve requests.");
 
                 //Get user
                 User targetUser = await _userDB.FindSingle(new() { 
