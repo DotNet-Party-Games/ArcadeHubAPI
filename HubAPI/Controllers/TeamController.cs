@@ -28,8 +28,20 @@ namespace HubAPI.Controllers {
             if (teams != null) {
                 _logger.LogInformation($"[TEAM: GetAllTeams] Query for all teams returned {teams.Count} results.");
             }
-            return Ok();
+            return Ok(teams);
         }
+
+        [HttpGet("{teamName}")]
+        public async Task<IActionResult> GetAllTeams([FromRoute] string teamName) {
+            Team team = await _teamManager.GetTeamByName(teamName);
+            if (team != null) {
+                _logger.LogInformation($"[TEAM: GetAllTeams] Query for team with name \"{teamName}\" successful.");
+            } else {
+                _logger.LogInformation($"[TEAM: GetAllTeams] Query for team with name \"{teamName}\" returned no result.");
+            }
+            return Ok(team);
+        }
+
 
         [HttpGet("request/{teamId}")]
         public async Task<IActionResult> GetAllRequests(string teamId) {

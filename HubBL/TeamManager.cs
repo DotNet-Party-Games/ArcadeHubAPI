@@ -31,6 +31,17 @@ namespace HubBL {
             });
         }
 
+        public async Task<Team> GetTeamByName(string teamName) {
+            return await _teamDB.FindSingle(new() {
+                Includes = new List<string> {
+                    "Users"
+                },
+                Conditions = new List<Func<Team, bool>> {
+                    t => t.Name == teamName
+                }
+            });
+        }
+
 
         public async Task<Team> CreateTeam(string teamName, string description, string ownerId) {
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
