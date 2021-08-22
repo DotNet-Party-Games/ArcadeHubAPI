@@ -160,11 +160,11 @@ namespace HubBL {
             //Get team
             Team targetTeam = await _teamDB.FindSingle(new() {
                 Conditions = new List<Func<Team, bool>> {
-                        t => t.Name == targetUser.TeamId
+                        t => t.Id == targetUser.TeamId
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{targetUser.TeamId}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with ID \"{targetUser.Id}\"");
 
             //Remove target user from team
             targetTeam.Users.Remove(targetUser);

@@ -56,16 +56,18 @@ namespace HubBL {
             });
         }
 
-        public async Task<TeamLeaderboard> SubmitTeamScore(string teamName, TeamScore score) {
-            if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+        public async Task<TeamLeaderboard> SubmitTeamScore(string gameName, TeamScore score) {
+            if (gameName == null) throw new ArgumentException("Missing parameter gameName");
             if (score == null) throw new ArgumentException("Missing parameter score");
 
             TeamLeaderboard targetLeaderboard = await _teamLeaderboardDB.FindSingle(new() {
                 Includes = _includes,
                 Conditions = new List<Func<TeamLeaderboard, bool>> {
-                    lb => lb.Id == teamName
+                    lb => lb.Id == gameName
                 }
             });
+
+            if (targetLeaderboard == null) throw new ArgumentException($"A leaderboard for game with name \"{gameName}\" does not exist");
 
             targetLeaderboard.Scores.Add(score);
 
