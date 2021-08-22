@@ -20,12 +20,12 @@ namespace HubAPI.Controllers {
             _logger = logger;
         }
 
-        [HttpGet("leaderboard/{gameType}")]
+        [HttpGet("individual/{gameType}")]
         public async Task<IActionResult> GetIndividualLeaderboard([FromRoute] string gameType) {
             return Ok(await _leaderboardManager.GetLeaderboard(gameType));
         }
 
-        [HttpPost("teamleaderboard/{gameType}")]
+        [HttpPost("individual/{gameType}")]
         public async Task<IActionResult> SubmitScore([FromRoute] string gameType, [FromBody] UserScore score) {
             Leaderboard leaderboard = await _leaderboardManager.SubmitScore(gameType, score);
             if (leaderboard != null) {
@@ -34,7 +34,7 @@ namespace HubAPI.Controllers {
             return Ok(leaderboard);
         }
 
-        [HttpGet("teamleaderboard/{gameType}")]
+        [HttpGet("team/{gameType}")]
         public async Task<IActionResult> GetTeamLeaderboard([FromRoute] string gameType) {
             TeamLeaderboard teamLeaderboard = await _leaderboardManager.GetTeamLeaderboard(gameType);
             if (teamLeaderboard != null) {
@@ -43,7 +43,7 @@ namespace HubAPI.Controllers {
             return Ok(teamLeaderboard);
         }
 
-        [HttpPost("teamleaderboard/{gameType}")]
+        [HttpPost("team/{gameType}")]
         public async Task<IActionResult> SubmitTeamScore([FromRoute] string gameType, [FromBody] TeamScore score) {
             TeamLeaderboard teamLeaderboard = await _leaderboardManager.SubmitTeamScore( gameType, score);
             if (teamLeaderboard != null) {

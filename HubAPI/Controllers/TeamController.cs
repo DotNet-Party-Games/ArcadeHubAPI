@@ -42,7 +42,7 @@ namespace HubAPI.Controllers {
         }
 
         [Authorize]
-        [HttpPost("create")]
+        [HttpPost()]
         public async Task<IActionResult> CreateTeam([FromBody] Team team) {
             if (!ModelState.IsValid) {
                 _logger.LogError("[TEAM: CreateTeam] Invalid team format.");
@@ -123,7 +123,7 @@ namespace HubAPI.Controllers {
         }
 
         [Authorize]
-        [HttpDelete("disband/{teamName}")]
+        [HttpDelete("{teamName}")]
         public async Task<IActionResult> DisbandTeam([FromRoute] string teamName) {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
