@@ -24,12 +24,21 @@ namespace HubAPI.Controllers {
 
         [HttpGet]
         public async Task<IActionResult> GetAllTeams() {
+            IList<Team> teams = await _teamManager.GetAllTeams();
+            if (teams != null) {
+                _logger.LogInformation($"[TEAM: GetAllTeams] Query for all teams returned {teams.Count} results.");
+            }
             return Ok();
         }
 
-        [HttpGet("request/{teamName}")]
-        public async Task<IActionResult> GetAllRequests() {
-            return Ok();
+        [HttpGet("request/{teamId}")]
+        public async Task<IActionResult> GetAllRequests(string teamId) {
+            IList<TeamJoinRequest> requests = await _teamManager.GetRequestsByTeamName(teamId);
+            if (requests != null) {
+                _logger.LogInformation($"[TEAM: GetAllRequests] Query for team join requests for team \"{teamId}\" returned {requests.Count} results.");
+            }
+
+            return Ok(requests);
         }
 
         [Authorize]
@@ -46,8 +55,13 @@ namespace HubAPI.Controllers {
                 _logger.LogError("[TEAM: CreateTeam] Unable to load userId from JWT.");
                 return BadRequest("Token error");
             }
-            
-            return Ok(await _teamManager.CreateTeam(team.Name, team.Description, userId));
+
+            Team newTeam = await _teamManager.CreateTeam(team.Name, team.Description, userId);
+            if (newTeam != null) {
+                _logger.LogInformation($"[TEAM: CreateTeam] New team with name \"{newTeam.Name}\" has been created.");
+            }
+
+            return Ok(newTeam);
         }
 
         [Authorize]
@@ -60,33 +74,69 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
-            return Ok(await _teamManager.CreateRequest(userId, teamName));
+            TeamJoinRequest newRequest = await _teamManager.CreateRequest(userId, teamName);
+            if (newRequest != null) {
+                _logger.LogInformation($"[TEAM: JoinRequest] Request by user with ID \"{newRequest.UserId}\" to join team \"{newRequest.TeamName}\"has been created.");
+            }
+
+            return Ok(newRequest);
         }
 
 
         [Authorize]
         [HttpPut("request/{requestId}")]
-        public async Task<IActionResult> JoinDecision(string requestId, bool approve=true) {
+        public async Task<IActionResult> ApproveOrDenyRequest(string requestId, bool approve=true) {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             if (userId == null) {
-                _logger.LogError("[TEAM: CreateTeam] Unable to load userId from JWT.");
+                _logger.LogError("[TEAM: ApproveOrDenyRequest] Unable to load userId from JWT.");
                 return BadRequest("Token error");
             }
 
-            return Ok(await _teamManager.ApproveOrDenyRequest(requestId, userId, approve));
+            bool results = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
+
+            if (approve && results) {
+                _logger.LogInformation($"[TEAM: ApproveOrDenyRequest] Request with ID \"{requestId}\" has been approved.");
+            } else {
+                _logger.LogInformation($"[TEAM: ApproveOrDenyRequest] Request with ID \"{requestId}\" has been denied.");
+            }
+            return Ok(results);
         }
 
         [Authorize]
-        [HttpPut("leave/{p_userEmail}/{p_teamName}")]
-        public async Task<IActionResult> LeaveTeam(string p_userEmail, string p_teamName) {
-            return Ok(await _teamManager.LeaveTeam(p_userEmail, p_teamName));
+        [HttpPut("leave")]
+        public async Task<IActionResult> LeaveTeam() {
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            if (userId == null) {
+                _logger.LogError("[TEAM: LeaveTeam] Unable to load userId from JWT.");
+                return BadRequest("Token error");
+            }
+
+            bool results = await _teamManager.LeaveTeam(userId);
+
+            if (results) {
+                _logger.LogInformation($"[TEAM: LeaveTeam] User with ID \"{userId}\" has successfully left their team.");
+            }
+
+            return Ok(results);
         }
 
         [Authorize]
-        [HttpDelete("disband/{p_teamOwner}/{p_teamName}")]
-        public async Task<IActionResult> DisbandTeam([FromRoute] string p_teamOwner, string p_teamName) {
-            return Ok(await _teamManager.DisbandTeam(p_teamOwner, p_teamName));
+        [HttpDelete("disband/{teamName}")]
+        public async Task<IActionResult> DisbandTeam([FromRoute] string teamName) {
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            if (userId == null) {
+                _logger.LogError("[TEAM: LeaveTeam] Unable to load userId from JWT.");
+                return BadRequest("Token error");
+            }
+
+            bool result = await _teamManager.DisbandTeam(userId, teamName);
+            if (result) {
+                _logger.LogInformation($"[TEAM: DisbandTeam] Team \"{teamName}\" has been disbanded by its owner.");
+            }
+            return Ok(result);
         }
     }
 }

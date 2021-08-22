@@ -23,6 +23,15 @@ namespace HubBL {
             };
         }
 
+        public async Task<IList<Team>> GetAllTeams() {
+            return await _teamDB.Query(new() {
+                Includes = new List<string> {
+                    "Users"
+                }
+            });
+        }
+
+
         public async Task<Team> CreateTeam(string teamName, string description, string ownerId) {
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
             if (description == null) throw new ArgumentException("Missing parameter description");
@@ -136,22 +145,28 @@ namespace HubBL {
             return await _joinRequestDB.Delete(request);
         }
 
-        public async Task<bool> LeaveTeam(string userId, string teamName) {
+        public async Task<bool> LeaveTeam(string userId) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
-            if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+
+            User targetUser = await _userDB.FindSingle(new() {
+                Conditions = new List<Func<User, bool>> {
+                    u => u.Id == userId
+                }
+            });
+
+            if (targetUser == null) throw new ArgumentException($"Unable to load user with ID \"{userId}\"");
+            if (targetUser.TeamId == null) throw new ArgumentException($"User with ID \"{userId}\"is not a member of a team");
+
             //Get team
             Team targetTeam = await _teamDB.FindSingle(new() {
                 Conditions = new List<Func<Team, bool>> {
-                        t => t.Name == teamName
+                        t => t.Name == targetUser.TeamId
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{targetUser.TeamId}\"");
 
             //Remove target user from team
-            User targetUser = targetTeam.Users.SingleOrDefault(u => u.Id == userId);
-            if (targetUser == null) return false;
-
             targetTeam.Users.Remove(targetUser);
 
             return true;
