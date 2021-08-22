@@ -25,17 +25,17 @@ namespace HubTests {
             context.Database.EnsureCreated();
 
             User user1 = new() {
-                Email = "user1@gmail.com",
+                Id = "user1@gmail.com",
                 Username = "user1",
             };
 
             User user2 = new() {
-                Email = "user2@gmail.com",
+                Id = "user2@gmail.com",
                 Username = "user2",
             };
 
             User user3 = new() {
-                Email = "uniqueuser@gmail.com",
+                Id = "uniqueuser@gmail.com",
                 Username = "uniqueuser",
             };
 
@@ -45,7 +45,7 @@ namespace HubTests {
                 new() {
                     Id = "1",
                     Name = "Team1",
-                    TeamOwner = user1.Email,
+                    TeamOwner = user1.Id,
                     Description = "We are Team1",
                     Users = new List<User> {
                         user1
@@ -54,7 +54,7 @@ namespace HubTests {
                 new() {
                     Id = "2",
                     Name = "Team2",
-                    TeamOwner = user2.Email,
+                    TeamOwner = user2.Id,
                     Description = "We are Team2",
                     Users = new List<User> {
                         user2, user1
@@ -63,7 +63,7 @@ namespace HubTests {
                 new() {
                     Id = "3",
                     Name = "Unique Name",
-                    TeamOwner = user3.Email,
+                    TeamOwner = user3.Id,
                     Description = "This team is unique",
                     Users = new List<User> {
                         user1, user3
@@ -97,7 +97,7 @@ namespace HubTests {
             Assert.IsType<Team>(targetTeam);
             Assert.Equal("New Team", targetTeam.Name);
             Assert.NotNull(targetTeam.Users);
-            Assert.Contains(targetTeam.Users, u => u.Email == "user1@gmail.com");
+            Assert.Contains(targetTeam.Users, u => u.Id == "user1@gmail.com");
         }
 
         [Theory]
@@ -143,7 +143,7 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            TeamJoinRequest newRequest = await teamManager.CreateRequest("Team1", "uniqueuser@gmail.com");
+            TeamJoinRequest newRequest = await teamManager.CreateRequest("uniqueuser@gmail.com","Team1");
             Assert.NotNull(newRequest);
 
             TeamJoinRequest targetRequest = context.TeamJoinRequests.Find(newRequest.Id);
@@ -232,7 +232,7 @@ namespace HubTests {
             Assert.Null(targetRequest);
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.Contains(targetTeam.Users, t => t.Email == "uniqueuser@gmail.com");
+            Assert.Contains(targetTeam.Users, t => t.Id == "uniqueuser@gmail.com");
         }
 
         [Fact]
@@ -252,7 +252,7 @@ namespace HubTests {
             Assert.Null(targetRequest);
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.DoesNotContain(targetTeam.Users, t => t.Email == "uniqueuser@gmail.com");
+            Assert.DoesNotContain(targetTeam.Users, t => t.Id == "uniqueuser@gmail.com");
         }
 
         [Theory]
@@ -285,7 +285,7 @@ namespace HubTests {
 
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.DoesNotContain(targetTeam.Users, t => t.Email == "user1@gmail.com");
+            Assert.DoesNotContain(targetTeam.Users, t => t.Id == "user1@gmail.com");
         }
 
         [Theory]

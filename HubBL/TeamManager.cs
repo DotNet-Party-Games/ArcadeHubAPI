@@ -30,7 +30,7 @@ namespace HubBL {
 
             User owner = await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == ownerId
+                    u => u.Id == ownerId
                 }
             });
             if (owner == null) throw new ArgumentException($"Unable to find user with id {ownerId}");
@@ -60,7 +60,7 @@ namespace HubBL {
             //Check if user exists
             User targetUser= await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == userId
+                    u => u.Id == userId
                 }
             });
             if (targetUser == null) throw new ArgumentException($"Unable to load user with id \"{userId}\"");
@@ -120,7 +120,7 @@ namespace HubBL {
                 //Get user
                 User targetUser = await _userDB.FindSingle(new() { 
                     Conditions = new List<Func<User, bool>> {
-                        u => u.Email == request.UserId
+                        u => u.Id == request.UserId
                     }
                 });
                 if (targetUser == null) throw new ArgumentException("Unable to load user specified in request");
@@ -146,7 +146,7 @@ namespace HubBL {
             if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
 
             //Remove target user from team
-            User targetUser = targetTeam.Users.SingleOrDefault(u => u.Email == userId);
+            User targetUser = targetTeam.Users.SingleOrDefault(u => u.Id == userId);
             if (targetUser == null) return false;
 
             targetTeam.Users.Remove(targetUser);

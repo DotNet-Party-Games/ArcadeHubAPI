@@ -9,13 +9,10 @@ namespace HubEntities.Database {
         }
 
         [Key]
-        public string Email { get; set; }
+        public string Id { get; set; }
 
         [Required]
         public string Username { get; set; }
-
-        public string ProfileImage { get; set; }
-
         public ICollection <Team> Teams { get; set; }
     }
 

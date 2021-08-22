@@ -55,8 +55,8 @@ namespace HubAPI {
             });
 
             services.AddCors(builder => {
-                builder.AddDefaultPolicy((policy) => {
-                    policy.WithOrigins("")
+                builder.AddDefaultPolicy(policy => {
+                    policy.WithOrigins("http://localhost:4200")
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials();
@@ -74,7 +74,7 @@ namespace HubAPI {
             services.AddScoped<UserManager>();
             services.AddScoped<TeamManager>();
 
-            
+
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
@@ -82,6 +82,17 @@ namespace HubAPI {
                     options.Audience = Configuration["Auth0:Audience"];
                     options.TokenValidationParameters = new TokenValidationParameters {
                         NameClaimType = ClaimTypes.NameIdentifier
+                    };
+                    options.Events = new JwtBearerEvents {
+                        OnTokenValidated = context => {
+                            if (context.SecurityToken is JwtSecurityToken token) {
+                                if (context.Principal.Identity is ClaimsIdentity identity) {
+                                    identity.AddClaim(new Claim("access_token", token.RawData));
+                                }
+                            }
+
+                            return Task.FromResult(0);
+                        }
                     };
                 });
 

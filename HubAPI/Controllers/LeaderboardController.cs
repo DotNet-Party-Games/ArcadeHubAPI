@@ -8,7 +8,7 @@ using HubBL;
 
 namespace HubAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class LeaderboardController : ControllerBase
     {

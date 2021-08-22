@@ -9,7 +9,7 @@ using HubEntities.Database;
 
 namespace HubAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class TeamController : ControllerBase
     {
