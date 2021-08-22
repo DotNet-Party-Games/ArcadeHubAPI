@@ -17,6 +17,9 @@ namespace HubDL {
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username).IsUnique();
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Team)
+                .WithMany(t => t.Users).OnDelete(DeleteBehavior.SetNull);
             //modelBuilder.Entity<ChatMessage>();
             modelBuilder.Entity<Leaderboard>();
             modelBuilder.Entity<TeamLeaderboard>();

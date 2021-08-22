@@ -24,7 +24,7 @@ namespace HubAPI.Controllers {
 
         [Authorize]
         [HttpGet("login")]
-        public async Task<IActionResult> Login() {
+        public async Task<IActionResult> GetUser() {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             if (userId == null) BadRequest();
@@ -33,15 +33,17 @@ namespace HubAPI.Controllers {
 
             if (targetUser == null) {
                 string accessToken = User.Claims.FirstOrDefault(c => c.Type == "access_token").Value;
-                AuthenticationApiClient apiClient = new AuthenticationApiClient(_configuration["auth0:domain"]);
+                AuthenticationApiClient apiClient = new(_configuration["auth0:domain"]);
                 UserInfo userInfo = await apiClient.GetUserInfoAsync(accessToken);
 
                 targetUser = await _userManager.CreateUser(new() {
-                    Id = userId
+                    Id = userId,
+                    Email = userInfo.Email,
+                    Username = userInfo.NickName,
+                    Picture = userInfo.Picture
                 });
             }
 
-            //Returns the user if they exist or creates a new database entry if it doesn't
             return Ok(targetUser);
         }
 

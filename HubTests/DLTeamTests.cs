@@ -98,11 +98,15 @@ namespace HubTests {
             IDatabase<Team> db = new HubDB<Team>(context);
 
             Team targetTeam = context.Teams.Find("2");
+            User targetOwner = context.Users.Find("owner2@gmail.com");
             await db.Delete(targetTeam);
+
 
             IList<Team> teams = context.Teams.Select(t => t).ToList();
             Assert.NotNull(teams);
             Assert.DoesNotContain(teams, t => t.Name == "Team2");
+            Assert.NotNull(targetOwner);
+            Assert.Null(targetOwner.Team);
         }
 
 

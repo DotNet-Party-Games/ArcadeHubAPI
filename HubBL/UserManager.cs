@@ -12,7 +12,7 @@ namespace HubBL {
         public UserManager(IDatabase<User> userDB) {
             _userDB = userDB;
             _includes = new List<string> {
-                "Teams"
+                "Team"
             };
         }
 
