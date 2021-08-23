@@ -8,7 +8,7 @@ using HubEntities.Database;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using HubEntities.Dto;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
@@ -55,7 +55,7 @@ namespace HubAPI.Controllers {
 
         [Authorize]
         [HttpPost()]
-        public async Task<IActionResult> CreateTeam([FromBody] Team team) {
+        public async Task<IActionResult> CreateTeam([FromBody] TeamDto team) {
             if (!ModelState.IsValid) {
                 _logger.LogError("[TEAM: CreateTeam] Invalid team format.");
                 return BadRequest("Team is not in a valid format");
