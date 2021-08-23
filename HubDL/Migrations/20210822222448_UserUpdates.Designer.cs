@@ -3,14 +3,16 @@ using HubDL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HubDL.Migrations
 {
     [DbContext(typeof(HubDbContext))]
-    partial class HubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210822222448_UserUpdates")]
+    partial class UserUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -25,18 +25,28 @@ namespace HubTests {
             context.Database.EnsureCreated();
 
             User user1 = new() {
-                Email = "user1@gmail.com",
+                Id = "user1@gmail.com",
                 Username = "user1",
             };
 
             User user2 = new() {
-                Email = "user2@gmail.com",
+                Id = "user2@gmail.com",
                 Username = "user2",
             };
 
             User user3 = new() {
-                Email = "uniqueuser@gmail.com",
+                Id = "uniqueuser@gmail.com",
                 Username = "uniqueuser",
+            };
+
+            User user4 = new() {
+                Id = "user4@gmail.com",
+                Username = "user4",
+            };
+
+            User user5 = new() {
+                Id = "user5@gmail.com",
+                Username = "user5",
             };
 
             context.Users.AddRange(user1, user2, user3);
@@ -45,7 +55,7 @@ namespace HubTests {
                 new() {
                     Id = "1",
                     Name = "Team1",
-                    TeamOwner = user1.Email,
+                    TeamOwner = user1.Id,
                     Description = "We are Team1",
                     Users = new List<User> {
                         user1
@@ -54,19 +64,19 @@ namespace HubTests {
                 new() {
                     Id = "2",
                     Name = "Team2",
-                    TeamOwner = user2.Email,
+                    TeamOwner = user2.Id,
                     Description = "We are Team2",
                     Users = new List<User> {
-                        user2, user1
+                        user2, user4
                     }
                 },
                 new() {
                     Id = "3",
                     Name = "Unique Name",
-                    TeamOwner = user3.Email,
+                    TeamOwner = user3.Id,
                     Description = "This team is unique",
                     Users = new List<User> {
-                        user1, user3
+                        user5
                     }
                 }
             );
@@ -88,7 +98,7 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            Team newTeam = await teamManager.CreateTeam("New Team", "This is a new team", "user1@gmail.com");
+            Team newTeam = await teamManager.CreateTeam("New Team", "This is a new team", "uniqueuser@gmail.com");
 
             Assert.NotNull(newTeam);
             Assert.NotNull(newTeam.Id);
@@ -97,7 +107,7 @@ namespace HubTests {
             Assert.IsType<Team>(targetTeam);
             Assert.Equal("New Team", targetTeam.Name);
             Assert.NotNull(targetTeam.Users);
-            Assert.Contains(targetTeam.Users, u => u.Email == "user1@gmail.com");
+            Assert.Contains(targetTeam.Users, u => u.Id == "uniqueuser@gmail.com");
         }
 
         [Theory]
@@ -112,7 +122,7 @@ namespace HubTests {
             );
 
             await Assert.ThrowsAsync<DbUpdateException>(() =>
-                teamManager.CreateTeam(teamname, "This is a new team", "user1@gmail.com")
+                teamManager.CreateTeam(teamname, "This is a new team", "uniqueuser@gmail.com")
             );
         }
 
@@ -143,7 +153,7 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            TeamJoinRequest newRequest = await teamManager.CreateRequest("Team1", "uniqueuser@gmail.com");
+            TeamJoinRequest newRequest = await teamManager.CreateRequest("uniqueuser@gmail.com","Team1");
             Assert.NotNull(newRequest);
 
             TeamJoinRequest targetRequest = context.TeamJoinRequests.Find(newRequest.Id);
@@ -224,7 +234,7 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            await teamManager.ApproveOrDenyRequest("testId");
+            await teamManager.ApproveOrDenyRequest("testId", "user2@gmail.com");
 
             Team targetTeam = context.Teams.Include(t => t.Users).SingleOrDefault(t => t.Name == "Team2");
 
@@ -232,7 +242,7 @@ namespace HubTests {
             Assert.Null(targetRequest);
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.Contains(targetTeam.Users, t => t.Email == "uniqueuser@gmail.com");
+            Assert.Contains(targetTeam.Users, t => t.Id == "uniqueuser@gmail.com");
         }
 
         [Fact]
@@ -244,7 +254,7 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            await teamManager.ApproveOrDenyRequest("testId", false);
+            await teamManager.ApproveOrDenyRequest("testId", "user2@gmail.com", false);
 
             Team targetTeam = context.Teams.Include(t => t.Users).SingleOrDefault(t => t.Name == "Team2");
 
@@ -252,12 +262,14 @@ namespace HubTests {
             Assert.Null(targetRequest);
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.DoesNotContain(targetTeam.Users, t => t.Email == "uniqueuser@gmail.com");
+            Assert.DoesNotContain(targetTeam.Users, t => t.Id == "uniqueuser@gmail.com");
         }
 
         [Theory]
-        [InlineData(null)]
-        public async Task ApproveRequestBadArgs(string requestId) {
+        [InlineData(null, null)]
+        [InlineData("testId", "user1@gmail.com")]
+        [InlineData(null, "user2@gmail.com")]
+        public async Task ApproveRequestBadArgs(string requestId, string ownerId) {
             using var context = new HubDbContext(_options);
             TeamManager teamManager = new(
                 new HubDB<Team>(context),
@@ -266,7 +278,7 @@ namespace HubTests {
             );
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
-                teamManager.ApproveOrDenyRequest(requestId)
+                teamManager.ApproveOrDenyRequest(requestId, ownerId)
             );
         }
 
@@ -279,19 +291,19 @@ namespace HubTests {
                 new HubDB<User>(context)
             );
 
-            await teamManager.LeaveTeam("user1@gmail.com", "Team2");
+            await teamManager.LeaveTeam("user2@gmail.com");
 
             Team targetTeam = context.Teams.Include(t => t.Users).SingleOrDefault(t => t.Name == "Team2");
 
             Assert.NotNull(targetTeam);
             Assert.NotNull(targetTeam.Users);
-            Assert.DoesNotContain(targetTeam.Users, t => t.Email == "user1@gmail.com");
+            Assert.DoesNotContain(targetTeam.Users, t => t.Id == "user2@gmail.com");
         }
 
         [Theory]
-        [InlineData(null, "Team1")]
-        [InlineData("user1@gmail.com", null)]
-        public async Task LeaveTeamInvalid(string userId, string teamName) {
+        [InlineData("does not exist")]
+        [InlineData("user1@gmail.com")]
+        public async Task LeaveTeamInvalid(string userId) {
             using var context = new HubDbContext(_options);
             TeamManager teamManager = new(
                 new HubDB<Team>(context),
@@ -300,7 +312,7 @@ namespace HubTests {
             );
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
-                teamManager.LeaveTeam(userId, teamName)
+                teamManager.LeaveTeam(userId)
             );
         }
 

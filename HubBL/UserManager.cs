@@ -12,7 +12,7 @@ namespace HubBL {
         public UserManager(IDatabase<User> userDB) {
             _userDB = userDB;
             _includes = new List<string> {
-                "Teams"
+                "Team"
             };
         }
 
@@ -24,7 +24,7 @@ namespace HubBL {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
             return await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == userId
+                    u => u.Id == userId
                 },
                 Includes = _includes
             });
@@ -35,13 +35,13 @@ namespace HubBL {
 
             User targetUser = await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == user.Email
+                    u => u.Id == user.Id
                 },
                 Includes = _includes
             });
 
             if (targetUser == null) {
-                throw new ArgumentException($"Unable to find user with given id \"{user.Email}\"");
+                throw new ArgumentException($"Unable to find user with given id \"{user.Id}\"");
             }
 
             targetUser.Username = user.Username;

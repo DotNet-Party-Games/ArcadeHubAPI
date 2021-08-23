@@ -23,6 +23,26 @@ namespace HubBL {
             };
         }
 
+        public async Task<IList<Team>> GetAllTeams() {
+            return await _teamDB.Query(new() {
+                Includes = new List<string> {
+                    "Users"
+                }
+            });
+        }
+
+        public async Task<Team> GetTeamByName(string teamName) {
+            return await _teamDB.FindSingle(new() {
+                Includes = new List<string> {
+                    "Users"
+                },
+                Conditions = new List<Func<Team, bool>> {
+                    t => t.Name == teamName
+                }
+            });
+        }
+
+
         public async Task<Team> CreateTeam(string teamName, string description, string ownerId) {
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
             if (description == null) throw new ArgumentException("Missing parameter description");
@@ -30,10 +50,11 @@ namespace HubBL {
 
             User owner = await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == ownerId
+                    u => u.Id == ownerId
                 }
             });
             if (owner == null) throw new ArgumentException($"Unable to find user with id {ownerId}");
+            if (owner.TeamId != null) throw new ArgumentException($"User is already a member of team \"{owner.TeamId}\"");
 
             return await _teamDB.Create(new() {
                 Name = teamName,
@@ -60,7 +81,7 @@ namespace HubBL {
             //Check if user exists
             User targetUser= await _userDB.FindSingle(new() {
                 Conditions = new List<Func<User, bool>> {
-                    u => u.Email == userId
+                    u => u.Id == userId
                 }
             });
             if (targetUser == null) throw new ArgumentException($"Unable to load user with id \"{userId}\"");
@@ -95,9 +116,10 @@ namespace HubBL {
             });
         }
 
-        public async Task<bool> ApproveOrDenyRequest(string requestId, bool approve = true) {
+        public async Task<bool> ApproveOrDenyRequest(string requestId, string ownerId, bool approve = true) {
             if (requestId == null) throw new ArgumentException("Missing parameter requestId");
-            //Check if user has already requested to join team
+            
+            //Search for request
             TeamJoinRequest request = await _joinRequestDB.FindSingle(new() {
                 Conditions = new List<Func<TeamJoinRequest, bool>> {
                     r => r.Id == requestId
@@ -116,11 +138,12 @@ namespace HubBL {
                     Includes = _teamIncludes
                 });
                 if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{request.TeamName}\"specified in request");
+                if (targetTeam.TeamOwner != ownerId) throw new ArgumentException($"User with ID \"{ownerId}\" cannot approve requests. Only the owner with ID \"{targetTeam.TeamOwner}\" can approve requests.");
 
                 //Get user
                 User targetUser = await _userDB.FindSingle(new() { 
                     Conditions = new List<Func<User, bool>> {
-                        u => u.Email == request.UserId
+                        u => u.Id == request.UserId
                     }
                 });
                 if (targetUser == null) throw new ArgumentException("Unable to load user specified in request");
@@ -133,22 +156,28 @@ namespace HubBL {
             return await _joinRequestDB.Delete(request);
         }
 
-        public async Task<bool> LeaveTeam(string userId, string teamName) {
+        public async Task<bool> LeaveTeam(string userId) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
-            if (teamName == null) throw new ArgumentException("Missing parameter teamName");
+
+            User targetUser = await _userDB.FindSingle(new() {
+                Conditions = new List<Func<User, bool>> {
+                    u => u.Id == userId
+                }
+            });
+
+            if (targetUser == null) throw new ArgumentException($"Unable to load user with ID \"{userId}\"");
+            if (targetUser.TeamId == null) throw new ArgumentException($"User with ID \"{userId}\"is not a member of a team");
+
             //Get team
             Team targetTeam = await _teamDB.FindSingle(new() {
                 Conditions = new List<Func<Team, bool>> {
-                        t => t.Name == teamName
+                        t => t.Id == targetUser.TeamId
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with ID \"{targetUser.Id}\"");
 
             //Remove target user from team
-            User targetUser = targetTeam.Users.SingleOrDefault(u => u.Email == userId);
-            if (targetUser == null) return false;
-
             targetTeam.Users.Remove(targetUser);
 
             return true;

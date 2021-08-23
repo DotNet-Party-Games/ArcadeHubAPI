@@ -17,6 +17,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 namespace HubAPI {
     public class Startup {
@@ -29,22 +33,40 @@ namespace HubAPI {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddSignalR();
+            services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
             services.AddControllers();
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HubAPI", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Scheme = "bearer",
+                    Description = "JWTForRevBoxGames"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement { {
+                    new OpenApiSecurityScheme {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }});
             });
 
-            services.AddCors( builder => {
-                    builder.AddDefaultPolicy((policy) => {
-                        policy.WithOrigins("")
-                               .AllowAnyHeader()
-                               .AllowAnyMethod()
-                               .AllowCredentials();
-                    });
-                }
+            services.AddCors(builder => {
+                builder.AddDefaultPolicy(policy => {
+                    policy.WithOrigins("http://localhost:4200")
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials();
+                });
+            }
             );
 
-            services.AddDbContext<HubDbContext>(options => 
+            services.AddDbContext<HubDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("AzureDB"))
             );
 
@@ -54,19 +76,28 @@ namespace HubAPI {
             services.AddScoped<UserManager>();
             services.AddScoped<TeamManager>();
 
+
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
-            services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {
                     options.Authority = domain;
                     options.Audience = Configuration["Auth0:Audience"];
-            // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-            options.TokenValidationParameters = new TokenValidationParameters
-                    {
+                    options.TokenValidationParameters = new TokenValidationParameters {
                         NameClaimType = ClaimTypes.NameIdentifier
                     };
+                    options.Events = new JwtBearerEvents {
+                        OnTokenValidated = context => {
+                            if (context.SecurityToken is JwtSecurityToken token) {
+                                if (context.Principal.Identity is ClaimsIdentity identity) {
+                                    identity.AddClaim(new Claim("access_token", token.RawData));
+                                }
+                            }
+
+                            return Task.FromResult(0);
+                        }
+                    };
                 });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,11 +108,22 @@ namespace HubAPI {
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HubAPI v1"));
             }
 
+            app.UseExceptionHandler(c => c.Run(async context =>
+            {
+                var exception = context.Features
+                    .Get<IExceptionHandlerPathFeature>()
+                    .Error;
+                var response = new { error = exception.Message };
+                await context.Response.WriteAsJsonAsync(response);
+            }));
+
             app.UseCors();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
@@ -89,8 +131,6 @@ namespace HubAPI {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chat");
             });
-
-            app.UseAuthentication();
 
         }
     }

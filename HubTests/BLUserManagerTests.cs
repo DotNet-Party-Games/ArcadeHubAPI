@@ -26,15 +26,15 @@ namespace HubTests {
 
             context.Users.AddRange(
                 new() {
-                    Email = "user1@gmail.com",
+                    Id = "user1@gmail.com",
                     Username = "user1",
                 },
                 new() {
-                    Email = "user2@gmail.com",
+                    Id = "user2@gmail.com",
                     Username = "user2",
                 },
                 new() {
-                    Email = "uniqueuser@gmail.com",
+                    Id = "uniqueuser@gmail.com",
                     Username = "uniqueuser",
                 }
             );
@@ -47,7 +47,7 @@ namespace HubTests {
             UserManager userManager = new(new HubDB<User>(context));
 
             await userManager.CreateUser(new() {
-                Email = "user3@gmail.com",
+                Id = "user3@gmail.com",
                 Username = "user3"
             });
 
@@ -69,7 +69,7 @@ namespace HubTests {
 
             await Assert.ThrowsAsync<DbUpdateException>(() =>
                 userManager.CreateUser(new() {
-                    Email = email,
+                    Id = email,
                     Username = username
                 })
             );
@@ -113,7 +113,7 @@ namespace HubTests {
             UserManager userManager = new(new HubDB<User>(context));
 
             await userManager.EditProfile(new() {
-                Email = userId,
+                Id = userId,
                 Username = username
             });
 
@@ -134,7 +134,7 @@ namespace HubTests {
 
             await Assert.ThrowsAsync<DbUpdateException>(() =>
                 userManager.EditProfile(new() {
-                    Email = userId,
+                    Id = userId,
                     Username = username
                 })
             );

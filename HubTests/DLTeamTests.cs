@@ -23,12 +23,12 @@ namespace HubTests {
             context.Database.EnsureCreated();
 
             User testOwner1 = new() {
-                Email = "owner@gmail.com",
+                Id = "owner@gmail.com",
                 Username = "owner@gmail.com"
             };
 
             User testOwner2 = new() {
-                Email = "owner2@gmail.com",
+                Id= "owner2@gmail.com",
                 Username = "owner2@gmail.com"
             };
 
@@ -39,7 +39,7 @@ namespace HubTests {
                 new() {
                     Id = "1",
                     Name = "Team1",
-                    TeamOwner = testOwner1.Email,
+                    TeamOwner = testOwner1.Id,
                     Description = "We are Team1",
                     Users = new List<User> {
                         testOwner1
@@ -48,7 +48,7 @@ namespace HubTests {
                 new() {
                     Id = "2",
                     Name = "Team2",
-                    TeamOwner = testOwner2.Email,
+                    TeamOwner = testOwner2.Id,
                     Description = "We are Team2",
                     Users = new List<User> {
                         testOwner2
@@ -57,7 +57,7 @@ namespace HubTests {
                 new() {
                     Id = "4",
                     Name = "Unique Name",
-                    TeamOwner = testOwner1.Email,
+                    TeamOwner = testOwner1.Id,
                     Description = "This team is unique",
                     Users = new List<User> {
                         testOwner1
@@ -74,14 +74,14 @@ namespace HubTests {
             IDatabase<Team> db = new HubDB<Team>(context);
 
             User newOwner = new() {
-                Email = "owner3@gmail.com",
+                Id = "owner3@gmail.com",
                 Username = "owner3@gmail.com"
             };
 
             await db.Create(new() {
                 Id = "3",
                 Name = "Team3",
-                TeamOwner = newOwner.Email,
+                TeamOwner = newOwner.Id,
                 Description = "We are Team3"
             });
 
@@ -98,11 +98,15 @@ namespace HubTests {
             IDatabase<Team> db = new HubDB<Team>(context);
 
             Team targetTeam = context.Teams.Find("2");
+            User targetOwner = context.Users.Find("owner2@gmail.com");
             await db.Delete(targetTeam);
+
 
             IList<Team> teams = context.Teams.Select(t => t).ToList();
             Assert.NotNull(teams);
             Assert.DoesNotContain(teams, t => t.Name == "Team2");
+            Assert.NotNull(targetOwner);
+            Assert.Null(targetOwner.Team);
         }
 
 
