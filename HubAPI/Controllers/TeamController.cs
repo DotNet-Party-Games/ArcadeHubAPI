@@ -44,10 +44,10 @@ namespace HubAPI.Controllers {
 
 
         [HttpGet("request/{teamId}")]
-        public async Task<IActionResult> GetAllRequests(string teamId) {
-            IList<TeamJoinRequest> requests = await _teamManager.GetRequestsByTeamName(teamId);
+        public async Task<IActionResult> GetAllRequests(string teamName) {
+            IList<TeamJoinRequest> requests = await _teamManager.GetRequestsByTeamName(teamName);
             if (requests != null) {
-                _logger.LogInformation($"[TEAM: GetAllRequests] Query for team join requests for team \"{teamId}\" returned {requests.Count} results.");
+                _logger.LogInformation($"[TEAM: GetAllRequests] Query for team join requests for team \"{teamName}\" returned {requests.Count} results.");
             }
 
             return Ok(requests);
