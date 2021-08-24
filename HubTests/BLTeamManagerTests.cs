@@ -302,7 +302,6 @@ namespace HubTests {
 
         [Theory]
         [InlineData("does not exist")]
-        [InlineData("user1@gmail.com")]
         public async Task LeaveTeamInvalid(string userId) {
             using var context = new HubDbContext(_options);
             TeamManager teamManager = new(
