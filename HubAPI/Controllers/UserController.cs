@@ -5,12 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using HubBL;
 using HubEntities.Database;
+using HubEntities.Dto;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Auth0.AuthenticationApi;
 using Microsoft.Extensions.Configuration;
 using Auth0.AuthenticationApi.Models;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
@@ -19,10 +21,16 @@ namespace HubAPI.Controllers {
         private readonly UserManager _userManager;
         private readonly IConfiguration _configuration;
         private readonly ILogger<UserController> _logger;
-        public UserController(IConfiguration configuration, UserManager userManager, ILogger<UserController> logger) {
+        private readonly IMapper _mapper;
+        public UserController(
+            IConfiguration configuration, 
+            UserManager userManager, 
+            ILogger<UserController> logger,
+            IMapper mapper) {
             _userManager = userManager;
             _configuration = configuration;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [Authorize]
@@ -52,29 +60,34 @@ namespace HubAPI.Controllers {
                 _logger.LogInformation($"[USER: GetUser] New user with ID \"{userId}\" successfully created.");
             }
 
-            return Ok(targetUser);
+            return Ok(_mapper.Map<UserDto>(targetUser));
             
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> EditProfile([FromBody] User user) {
+        public async Task<IActionResult> EditProfile([FromBody] EditUserDto user) {
             if (!ModelState.IsValid) {
                 _logger.LogError("[USER: EditProfile] Invalid user profile format.");
                 return BadRequest("User is not in a valid format");
             }
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             if (userId == null) {
-                _logger.LogError("[USER: GetUser] Unable to load userId from JWT.");
+                _logger.LogError("[USER: EditProfile] Unable to load userId from JWT.");
                 return BadRequest("Token error");
             }
-            if (userId != user.Id) {
-                _logger.LogError($"[USER: GetUser] User with ID \"{userId}\" attempted to modify an account with ID \"{user.Id}\".");
-                return BadRequest($"You are not authorized to modify this account with ID: \"{user.Id}\".");
-            }
 
-            _logger.LogInformation($"[USER: GetUser] User with ID \"{userId}\" successfully modified their account.");
-            return Ok(await _userManager.EditProfile(user));
+            User targetUser = _mapper.Map<User>(user);
+            targetUser.Id = userId;
+
+            User editedUser = await _userManager.EditProfile(targetUser);
+
+            if (editedUser == null) {
+                _logger.LogError("[USER: EditProfile] Failed to edit user.");
+                return BadRequest("Error editing user");
+            }
+            _logger.LogInformation($"[USER: EditProfile] User with ID \"{userId}\" successfully modified their account.");
+            return Ok(editedUser);
         }
     }
 }

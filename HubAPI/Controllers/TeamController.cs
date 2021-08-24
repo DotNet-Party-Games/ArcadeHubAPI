@@ -55,7 +55,7 @@ namespace HubAPI.Controllers {
 
         [Authorize]
         [HttpPost()]
-        public async Task<IActionResult> CreateTeam([FromBody] TeamDto team) {
+        public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto team) {
             if (!ModelState.IsValid) {
                 _logger.LogError("[TEAM: CreateTeam] Invalid team format.");
                 return BadRequest("Team is not in a valid format");

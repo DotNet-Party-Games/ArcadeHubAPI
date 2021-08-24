@@ -67,6 +67,8 @@ namespace HubAPI {
             }
             );
 
+            services.AddAutoMapper(typeof(Startup));
+
             services.AddDbContext<HubDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("AzureDB"))
             );
