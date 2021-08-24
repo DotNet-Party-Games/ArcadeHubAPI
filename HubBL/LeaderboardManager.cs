@@ -67,7 +67,7 @@ namespace HubBL {
                 }
             });
 
-            if (targetLeaderboard == null) throw new ArgumentException($"A leaderboard for game with name \"{gameName}\" does not exist");
+            if (targetLeaderboard == null) throw new ArgumentException($"A leaderboard for game with name '{gameName}' does not exist");
 
             targetLeaderboard.Scores.Add(score);
 

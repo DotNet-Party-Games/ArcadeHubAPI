@@ -1,9 +1,13 @@
+﻿using HubEntities.Database;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace HubEntities.Database {
-    public class User {
+namespace HubEntities.Dto {
+    public class UserDto {
         [Key]
         public string Id { get; set; }
 
@@ -16,9 +20,6 @@ namespace HubEntities.Database {
 
         public string TeamId { get; set; }
 
-        public Team Team { get; set; }
-
-        public ICollection<ChatConnection> Connections { get; set; }
+        public TeamInfoDto Team { get; set; }
     }
-
 }

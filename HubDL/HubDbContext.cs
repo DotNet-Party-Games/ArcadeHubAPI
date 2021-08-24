@@ -13,6 +13,7 @@ namespace HubDL {
         public DbSet<TeamScore> TeamScores { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamJoinRequest> TeamJoinRequests { get; set; }
+        public DbSet<ChatConnection> ChatConnections { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.Entity<User>()
@@ -20,6 +21,7 @@ namespace HubDL {
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Team)
                 .WithMany(t => t.Users).OnDelete(DeleteBehavior.SetNull);
+
             //modelBuilder.Entity<ChatMessage>();
             modelBuilder.Entity<Leaderboard>();
             modelBuilder.Entity<TeamLeaderboard>();
@@ -27,6 +29,7 @@ namespace HubDL {
             modelBuilder.Entity<TeamScore>();
             modelBuilder.Entity<Team>().HasIndex(t => t.Name).IsUnique();
             modelBuilder.Entity<TeamJoinRequest>();
+            modelBuilder.Entity<ChatConnection>();
         }
     }
 }

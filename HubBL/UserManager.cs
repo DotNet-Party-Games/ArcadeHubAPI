@@ -45,6 +45,9 @@ namespace HubBL {
             }
 
             targetUser.Username = user.Username;
+            targetUser.Email = user.Email;
+            targetUser.Picture = user.Picture;
+
             await _userDB.Save();
             return targetUser;
         }
