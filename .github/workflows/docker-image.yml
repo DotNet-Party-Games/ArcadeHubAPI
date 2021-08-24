@@ -25,11 +25,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
       - name: ASP.NET API Restore dependencies
-        run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+#         run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+        run: dotnet restore 
       - name: ASP.NET API Build
-        run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
+#         run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
       - name: ASP.NET API Test
-        run: dotnet test ${{ env.WORKING_DIRECTORY }} --no-build --verbosity normal
+#         run: dotnet test ${{ env.WORKING_DIRECTORY }} --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal
     # Build and Test API ----------------------------------------------------------------------------
     
     # SONAR CLOUD -----------------------------------------------------------------------------------
@@ -45,9 +48,10 @@ jobs:
           # The name of the SonarQube organization in SonarCloud. For hosted SonarQube, skip this setting.
           sonarOrganization: dotnet-party-games
           # Optional command arguments to 'dotnet build'
-          dotnetBuildArguments: ${{ env.WORKING_DIRECTORY }}
+#           dotnetBuildArguments: ${{ env.WORKING_DIRECTORY }}
           # Optional command arguments to 'dotnet test'
-          dotnetTestArguments: ${{ env.WORKING_DIRECTORY }} --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+#           dotnetTestArguments: ${{ env.WORKING_DIRECTORY }} --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          dotnetTestArguments: --logger trx --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           # Optional. Set to 1 or true to not run 'dotnet test' command
 #           dotnetDisableTests: # optional
           # Optional extra command arguments the the SonarScanner 'begin' command
