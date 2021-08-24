@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace HubEntities.Dto {
-    public class UserDto {
+    public class TeamMemberDto {
         [Key]
         public string Id { get; set; }
 
@@ -17,9 +17,5 @@ namespace HubEntities.Dto {
         public string Email { get; set; }
 
         public string Picture { get; set; }
-
-        public string TeamId { get; set; }
-
-        public TeamInfoDto Team { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using HubEntities.Dto;
+using AutoMapper;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
@@ -16,9 +17,11 @@ namespace HubAPI.Controllers {
     public class TeamController : ControllerBase {
         private readonly TeamManager _teamManager;
         private readonly ILogger<TeamController> _logger;
-        public TeamController(TeamManager teamManager, ILogger<TeamController> logger) {
+        private readonly IMapper _mapper;
+        public TeamController(TeamManager teamManager, ILogger<TeamController> logger, IMapper mapper) {
             _logger = logger;
             _teamManager = teamManager;
+            _mapper = mapper;
         }
 
 
@@ -28,18 +31,19 @@ namespace HubAPI.Controllers {
             if (teams != null) {
                 _logger.LogInformation($"[TEAM: GetAllTeams] Query for all teams returned {teams.Count} results.");
             }
-            return Ok(teams);
+            return Ok(_mapper.Map<IList<Team>, IList<TeamDto>>(teams));
         }
 
         [HttpGet("{teamName}")]
-        public async Task<IActionResult> GetAllTeams([FromRoute] string teamName) {
+        public async Task<IActionResult> GetTeam([FromRoute] string teamName) {
             Team team = await _teamManager.GetTeamByName(teamName);
             if (team != null) {
-                _logger.LogInformation($"[TEAM: GetAllTeams] Query for team with name \"{teamName}\" successful.");
+                _logger.LogInformation($"[TEAM: GetTeam] Query for team with name \"{teamName}\" successful.");
             } else {
-                _logger.LogInformation($"[TEAM: GetAllTeams] Query for team with name \"{teamName}\" returned no result.");
-            }
-            return Ok(team);
+                _logger.LogInformation($"[TEAM: GetTeam] Query for team with name \"{teamName}\" returned no result.");
+                return BadRequest(new { error = $"No team found with name '{teamName}'" });
+            } 
+            return Ok(_mapper.Map<TeamDto>(team));
         }
 
 
@@ -73,7 +77,7 @@ namespace HubAPI.Controllers {
                 _logger.LogInformation($"[TEAM: CreateTeam] New team with name \"{newTeam.Name}\" has been created.");
             }
 
-            return Ok(newTeam);
+            return Ok(_mapper.Map<TeamDto>(newTeam));
         }
 
         [Authorize]
@@ -91,7 +95,7 @@ namespace HubAPI.Controllers {
                 _logger.LogInformation($"[TEAM: JoinRequest] Request by user with ID \"{newRequest.UserId}\" to join team \"{newRequest.TeamName}\"has been created.");
             }
 
-            return Ok(newRequest);
+            return Ok(_mapper.Map<TeamJoinRequestDto>(newRequest));
         }
 
 
