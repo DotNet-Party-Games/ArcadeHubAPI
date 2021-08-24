@@ -47,8 +47,8 @@ namespace HubAPI.Controllers {
         }
 
 
-        [HttpGet("request/{teamId}")]
-        public async Task<IActionResult> GetAllRequests(string teamName) {
+        [HttpGet("request/{teamName}")]
+        public async Task<IActionResult> GetAllRequests([FromRoute]string teamName) {
             IList<TeamJoinRequest> requests = await _teamManager.GetRequestsByTeamName(teamName);
             if (requests != null) {
                 _logger.LogInformation($"[TEAM: GetAllRequests] Query for team join requests for team \"{teamName}\" returned {requests.Count} results.");
@@ -100,7 +100,7 @@ namespace HubAPI.Controllers {
 
 
         [Authorize]
-        [HttpPut("request/{requestId}")]
+        [HttpPut("request/approve/{requestId}")]
         public async Task<IActionResult> ApproveOrDenyRequest(string requestId, bool approve=true) {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 

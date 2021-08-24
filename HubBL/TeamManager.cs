@@ -53,8 +53,8 @@ namespace HubBL {
                     u => u.Id == ownerId
                 }
             });
-            if (owner == null) throw new ArgumentException($"Unable to find user with id {ownerId}");
-            if (owner.TeamId != null) throw new ArgumentException($"User is already a member of team \"{owner.TeamId}\"");
+            if (owner == null) throw new ArgumentException($"Unable to find user with ID '{ownerId}'");
+            if (owner.TeamId != null) throw new ArgumentException($"User is already a member of team with ID'{owner.TeamId}'");
 
             return await _teamDB.Create(new() {
                 Name = teamName,
@@ -76,7 +76,7 @@ namespace HubBL {
                     t => t.Name == teamName
                 }
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name '{teamName}'");
 
             //Check if user exists
             User targetUser= await _userDB.FindSingle(new() {
@@ -84,7 +84,7 @@ namespace HubBL {
                     u => u.Id == userId
                 }
             });
-            if (targetUser == null) throw new ArgumentException($"Unable to load user with id \"{userId}\"");
+            if (targetUser == null) throw new ArgumentException($"Unable to load user with ID '{userId}'");
 
             //Check if user has already requested to join team
             TeamJoinRequest request = await _joinRequestDB.FindSingle(new() {
@@ -94,7 +94,7 @@ namespace HubBL {
             }
             });
 
-            if (request != null) throw new ArgumentException($"The user \"{userId}\" already has a pending request to join this team");
+            if (request != null) throw new ArgumentException($"The user with ID '{userId}' already has a pending request to join this team");
 
             //Create request
             return await _joinRequestDB.Create(new() {
@@ -126,7 +126,7 @@ namespace HubBL {
                 }
             });
 
-            if (request == null) throw new ArgumentException($"No request with id \"{requestId}\" could be found");
+            if (request == null) throw new ArgumentException($"No request with id '{requestId}' could be found");
 
             // Add User to team if approved
             if (approve) {
@@ -137,8 +137,8 @@ namespace HubBL {
                     },
                     Includes = _teamIncludes
                 });
-                if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{request.TeamName}\"specified in request");
-                if (targetTeam.TeamOwner != ownerId) throw new ArgumentException($"User with ID \"{ownerId}\" cannot approve requests. Only the owner with ID \"{targetTeam.TeamOwner}\" can approve requests.");
+                if (targetTeam == null) throw new ArgumentException($"Unable to load team with name '{request.TeamName}'specified in request");
+                if (targetTeam.TeamOwner != ownerId) throw new ArgumentException($"User with ID '{ownerId}' cannot approve requests. Only the owner with ID '{targetTeam.TeamOwner}' can approve requests.");
 
                 //Get user
                 User targetUser = await _userDB.FindSingle(new() { 
@@ -165,8 +165,8 @@ namespace HubBL {
                 }
             });
 
-            if (targetUser == null) throw new ArgumentException($"Unable to load user with ID \"{userId}\"");
-            if (targetUser.TeamId == null) throw new ArgumentException($"User with ID \"{userId}\"is not a member of a team");
+            if (targetUser == null) throw new ArgumentException($"Unable to load user with ID '{userId}'");
+            if (targetUser.TeamId == null) throw new ArgumentException($"User with ID '{userId}' is not a member of a team");
 
             //Get team
             Team targetTeam = await _teamDB.FindSingle(new() {
@@ -175,12 +175,13 @@ namespace HubBL {
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with ID \"{targetUser.Id}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with ID '{targetUser.Id}'");
 
             //Remove target user from team
             targetTeam.Users.Remove(targetUser);
-
-            return true;
+            targetUser.Team = null;
+            targetUser.TeamId = null;
+            return await _teamDB.Save();
         }
 
         public async Task<bool> DisbandTeam(string userId, string teamName) {
@@ -194,10 +195,10 @@ namespace HubBL {
                     },
                 Includes = _teamIncludes
             });
-            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name \"{teamName}\"");
+            if (targetTeam == null) throw new ArgumentException($"Unable to load team with name '{teamName}'");
 
             //Delete team if the user is the owner
-            if (targetTeam.TeamOwner != null && targetTeam.TeamOwner != userId) throw new ArgumentException($"User \"{userId}\" is not the owner of this team");
+            if (targetTeam.TeamOwner != null && targetTeam.TeamOwner != userId) throw new ArgumentException($"User '{userId}' is not the owner of this team");
             return await _teamDB.Delete(targetTeam);
         }
     }
