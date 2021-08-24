@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+      - uses: actions/checkout@v2
     # Build and Test API ----------------------------------------------------------------------------
       - name: ASP.NET API Setup 
         uses: actions/setup-dotnet@v1
@@ -66,8 +66,8 @@ jobs:
     # SONAR CLOUD -----------------------------------------------------------------------------------
     
     # Build and Push Image to DockerHub -------------------------------------------------------------
-      - name: Docker Check Out Repo 
-        uses: actions/checkout@v2
+#       - name: Docker Check Out Repo 
+
 
       - name: Docker Login to Docker Hub
         uses: docker/login-action@v1
