@@ -29,7 +29,7 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> SubmitScore([FromRoute] string gameType, [FromBody] UserScore score) {
             Leaderboard leaderboard = await _leaderboardManager.SubmitScore(gameType, score);
             if (leaderboard != null) {
-                _logger.LogInformation($"[LEADERBOARD: SubmitScore] User Score successfully submitted for game type \"{gameType}\".");
+                _logger.LogInformation("[LEADERBOARD: SubmitScore] User Score successfully submitted for game type '{gameType}'.", gameType);
             }
             return Ok(leaderboard);
         }
@@ -38,7 +38,7 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> GetTeamLeaderboard([FromRoute] string gameType) {
             TeamLeaderboard teamLeaderboard = await _leaderboardManager.GetTeamLeaderboard(gameType);
             if (teamLeaderboard != null) {
-                _logger.LogInformation($"[LEADERBOARD: GetTeamLeaderboard] Query for team leaderboard for game type \"{gameType}\" was successful.");
+                _logger.LogInformation("[LEADERBOARD: GetTeamLeaderboard] Query for team leaderboard for game type '{gameType}' was successful.", gameType);
             }
             return Ok(teamLeaderboard);
         }
@@ -47,7 +47,7 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> SubmitTeamScore([FromRoute] string gameType, [FromBody] TeamScore score) {
             TeamLeaderboard teamLeaderboard = await _leaderboardManager.SubmitTeamScore( gameType, score);
             if (teamLeaderboard != null) {
-                _logger.LogInformation($"[LEADERBOARD: SubmitTeamScore] Team Score successfully submitted for game type \"{gameType}\".");
+                _logger.LogInformation("[LEADERBOARD: SubmitTeamScore] Team Score successfully submitted for game type '{gameType}'.", gameType);
             }
             return Ok(teamLeaderboard);
         }

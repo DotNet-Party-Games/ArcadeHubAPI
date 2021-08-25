@@ -46,7 +46,7 @@ namespace HubAPI.Controllers {
             User targetUser = await _userManager.GetUser(userId);
 
             if (targetUser == null) {
-                _logger.LogInformation($"[USER: GetUser] New user with ID \"{userId}\" is being created.");
+                _logger.LogInformation("[USER: GetUser] New user with ID '{userId}' is being created.", userId);
                 string accessToken = User.Claims.FirstOrDefault(c => c.Type == "access_token").Value;
                 AuthenticationApiClient apiClient = new(_configuration["auth0:domain"]);
                 UserInfo userInfo = await apiClient.GetUserInfoAsync(accessToken);
@@ -57,7 +57,7 @@ namespace HubAPI.Controllers {
                     Username = userInfo.NickName,
                     Picture = userInfo.Picture
                 });
-                _logger.LogInformation($"[USER: GetUser] New user with ID \"{userId}\" successfully created.");
+                _logger.LogInformation("[USER: GetUser] New user with ID '{userId}' successfully created.", userId);
             }
 
             return Ok(_mapper.Map<UserDto>(targetUser));
@@ -86,7 +86,7 @@ namespace HubAPI.Controllers {
                 _logger.LogError("[USER: EditProfile] Failed to edit user.");
                 return BadRequest("Error editing user");
             }
-            _logger.LogInformation($"[USER: EditProfile] User with ID \"{userId}\" successfully modified their account.");
+            _logger.LogInformation("[USER: EditProfile] User with ID '{userId}' successfully modified their account.", userId);
             return Ok(editedUser);
         }
     }

@@ -19,7 +19,7 @@ namespace HubBL {
         public async Task<IList<ChatMessage>> GetMessagesByUser(string userId) {
             return await _messageDB.Query(new() {
                 Conditions = new List<Func<ChatMessage, bool>> {
-                    m => m.SenderId == userId || m.ReceiverId == userId
+                    m => m.SenderId == userId
                 }
             }) ;
         }

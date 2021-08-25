@@ -29,6 +29,7 @@
     <ProjectReference Include="..\HubBL\HubBL.csproj" />
     <ProjectReference Include="..\HubDL\HubDL.csproj" />
     <ProjectReference Include="..\HubEntities\HubEntities.csproj" />
+    <ProjectReference Include="..\HubTests\HubTests.csproj" />
   </ItemGroup>
 
 </Project>
