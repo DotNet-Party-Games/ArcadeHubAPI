@@ -17,7 +17,8 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   rules:
-    - http:
+    - host: revaboxgames.com
+      http:
         paths:
         # Songs Ink
           - path: /songsinkapi/?(.*)
