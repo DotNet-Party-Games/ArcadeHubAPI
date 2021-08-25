@@ -17,6 +17,7 @@ namespace HubAPI {
     public class ChatHub: Hub {
         public override Task OnConnectedAsync() {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            /*
             using (HubDbContext db = new()) {
                 User user = db.Users.Include(u => u.Connections).SingleOrDefault(u => u.Id == userId);
                 if (user == null) {
@@ -28,11 +29,12 @@ namespace HubAPI {
                     Connected = true
                 });
                 db.SaveChanges();
-            }
+            }*/
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
+            /*
             using (HubDbContext db = new()) {
                 ChatConnection connection = db.ChatConnections
                     .Include(c => c.User)
@@ -49,18 +51,18 @@ namespace HubAPI {
                 }
                 db.Remove(connection);
                 db.SaveChanges();
-            }
+            }*/
             return base.OnDisconnectedAsync(exception);
         }
 
         // Game Room Chat
         public async Task GameRoomChat(string roomId, ChatMessage message) {
             await Clients.Group(roomId).SendAsync("Message", message);
-
         }
         public async Task JoinGameRoomChat(string roomId) {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+            /*
             using (HubDbContext db = new()) {
                 ChatConnection connection = db.ChatConnections
                     .Include(c => c.User)
@@ -86,14 +88,13 @@ namespace HubAPI {
                         Status = "PRESENT"
                     });
                 }
-
-            }
-
+            }*/
         }
 
         public async Task LeaveGameRoomChat(string roomId) {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+            /*
             using (HubDbContext db = new()) {
                 ChatConnection connection = db.ChatConnections
                     .Include(c => c.User)
@@ -109,7 +110,7 @@ namespace HubAPI {
                 }
 
                 db.SaveChanges();
-            }
+            }*/
         }
     }
 }

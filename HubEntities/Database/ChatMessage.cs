@@ -9,12 +9,8 @@ namespace HubEntities.Database {
         public string Id { get; set; }
         public string SenderId { get; set; }
         public User Sender { get; set; }
-        public string ReceiverId { get; set; }
-        public User Receiver { get; set; }
         public string SenderName { get; set; }
         public string Body { get; set; }
-
-        [Timestamp]
-        public byte[] Timestamp { get; set; }
+        public long Timestamp { get; set; }
     }
 }

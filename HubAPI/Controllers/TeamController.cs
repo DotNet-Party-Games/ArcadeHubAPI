@@ -29,7 +29,7 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> GetAllTeams() {
             IList<Team> teams = await _teamManager.GetAllTeams();
             if (teams != null) {
-                _logger.LogInformation($"[TEAM: GetAllTeams] Query for all teams returned {teams.Count} results.");
+                _logger.LogInformation("[TEAM: GetAllTeams] Query for all teams returned {count} results.", teams.Count);
             }
             return Ok(_mapper.Map<IList<Team>, IList<TeamDto>>(teams));
         }
@@ -38,9 +38,9 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> GetTeam([FromRoute] string teamName) {
             Team team = await _teamManager.GetTeamByName(teamName);
             if (team != null) {
-                _logger.LogInformation($"[TEAM: GetTeam] Query for team with name \"{teamName}\" successful.");
+                _logger.LogInformation("[TEAM: GetTeam] Query for team with name '{teamName}' successful.", teamName);
             } else {
-                _logger.LogInformation($"[TEAM: GetTeam] Query for team with name \"{teamName}\" returned no result.");
+                _logger.LogInformation("[TEAM: GetTeam] Query for team with name '{teamName}' returned no result.", teamName);
                 return BadRequest(new { error = $"No team found with name '{teamName}'" });
             } 
             return Ok(_mapper.Map<TeamDto>(team));
@@ -51,7 +51,7 @@ namespace HubAPI.Controllers {
         public async Task<IActionResult> GetAllRequests([FromRoute]string teamName) {
             IList<TeamJoinRequest> requests = await _teamManager.GetRequestsByTeamName(teamName);
             if (requests != null) {
-                _logger.LogInformation($"[TEAM: GetAllRequests] Query for team join requests for team \"{teamName}\" returned {requests.Count} results.");
+                _logger.LogInformation("[TEAM: GetAllRequests] Query for team join requests for team '{teamName}' returned {count} results.", teamName, requests.Count);
             }
 
             return Ok(requests);
@@ -74,7 +74,7 @@ namespace HubAPI.Controllers {
 
             Team newTeam = await _teamManager.CreateTeam(team.Name, team.Description, userId);
             if (newTeam != null) {
-                _logger.LogInformation($"[TEAM: CreateTeam] New team with name \"{newTeam.Name}\" has been created.");
+                _logger.LogInformation("[TEAM: CreateTeam] New team with name '{name}' has been created.", newTeam.Name);
             }
 
             return Ok(_mapper.Map<TeamDto>(newTeam));
@@ -92,7 +92,7 @@ namespace HubAPI.Controllers {
 
             TeamJoinRequest newRequest = await _teamManager.CreateRequest(userId, teamName);
             if (newRequest != null) {
-                _logger.LogInformation($"[TEAM: JoinRequest] Request by user with ID \"{newRequest.UserId}\" to join team \"{newRequest.TeamName}\"has been created.");
+                _logger.LogInformation("[TEAM: JoinRequest] Request by user with ID '{userId}' to join team '{teamName}' has been created.", newRequest.UserId, newRequest.TeamName);
             }
 
             return Ok(_mapper.Map<TeamJoinRequestDto>(newRequest));
@@ -112,9 +112,9 @@ namespace HubAPI.Controllers {
             bool results = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
 
             if (approve && results) {
-                _logger.LogInformation($"[TEAM: ApproveOrDenyRequest] Request with ID \"{requestId}\" has been approved.");
+                _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been approved.", requestId);
             } else {
-                _logger.LogInformation($"[TEAM: ApproveOrDenyRequest] Request with ID \"{requestId}\" has been denied.");
+                _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been denied.", requestId);
             }
             return Ok(results);
         }
@@ -132,7 +132,7 @@ namespace HubAPI.Controllers {
             bool results = await _teamManager.LeaveTeam(userId);
 
             if (results) {
-                _logger.LogInformation($"[TEAM: LeaveTeam] User with ID \"{userId}\" has successfully left their team.");
+                _logger.LogInformation("[TEAM: LeaveTeam] User with ID '{userId}' has successfully left their team.", userId);
             }
 
             return Ok(results);
@@ -150,7 +150,7 @@ namespace HubAPI.Controllers {
 
             bool result = await _teamManager.DisbandTeam(userId, teamName);
             if (result) {
-                _logger.LogInformation($"[TEAM: DisbandTeam] Team \"{teamName}\" has been disbanded by its owner.");
+                _logger.LogInformation("[TEAM: DisbandTeam] Team '{teamName}' has been disbanded by its owner.", teamName);
             }
             return Ok(result);
         }
