@@ -116,7 +116,7 @@ namespace HubBL {
             });
         }
 
-        public async Task<bool> ApproveOrDenyRequest(string requestId, string ownerId, bool approve = true) {
+        public async Task<TeamJoinRequest> ApproveOrDenyRequest(string requestId, string ownerId, bool approve = true) {
             if (requestId == null) throw new ArgumentException("Missing parameter requestId");
             
             //Search for request
@@ -153,7 +153,8 @@ namespace HubBL {
             }
 
             //Remove request
-            return await _joinRequestDB.Delete(request);
+            await _joinRequestDB.Delete(request);
+            return request;
         }
 
         public async Task<bool> LeaveTeam(string userId) {

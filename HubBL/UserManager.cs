@@ -12,7 +12,8 @@ namespace HubBL {
         public UserManager(IDatabase<User> userDB) {
             _userDB = userDB;
             _includes = new List<string> {
-                "Team"
+                "Team",
+                "Connections"
             };
         }
 
@@ -28,6 +29,10 @@ namespace HubBL {
                 },
                 Includes = _includes
             });
+        }
+
+        public async Task<bool> SaveUser() {
+            return await _userDB.Save();
         }
 
         public async Task<User> EditProfile(User user) {

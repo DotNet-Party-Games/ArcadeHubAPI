@@ -13,9 +13,11 @@ spec:
       labels:
         app: songsinkapi
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: songsinkapi
         image: 210628utanet/songsinkapi:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -52,9 +54,11 @@ spec:
       labels:
         app: songsinksocket
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: songsinksocket
         image: 210628utanet/songsinksocket:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -92,9 +96,11 @@ spec:
       labels:
         app: battleship
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: battleship
         image: 210628utanet/battleship:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -131,9 +137,11 @@ spec:
       labels:
         app: battleshipsocket
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: battleshipsocket
         image: 210628utanet/battleshipsocket:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -171,9 +179,11 @@ spec:
       labels:
         app: dotnetroyale
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: dotnetroyale
         image: 210628utanet/dotnetroyale:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -210,9 +220,11 @@ spec:
       labels:
         app: dotnetroyalsocket
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: dotnetroyalsocket
         image: 210628utanet/dotnetroyalsocket:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -249,9 +261,11 @@ spec:
       labels:
         app: hubapi
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: hubapi
         image: 210628utanet/hubapi:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m
@@ -288,9 +302,11 @@ spec:
       labels:
         app: gamehubui
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: gamehubui
         image: 210628utanet/gamehubui:latest
+        imagePullPolicy: "Always"
         resources:
           requests:
             cpu: 100m

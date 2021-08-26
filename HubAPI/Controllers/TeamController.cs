@@ -10,18 +10,28 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using HubEntities.Dto;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
     [ApiController]
     public class TeamController : ControllerBase {
         private readonly TeamManager _teamManager;
+        private readonly UserManager _userManager;
         private readonly ILogger<TeamController> _logger;
         private readonly IMapper _mapper;
-        public TeamController(TeamManager teamManager, ILogger<TeamController> logger, IMapper mapper) {
+        private readonly IHubContext<ChatHub> _hubcontext;
+        public TeamController(
+            TeamManager teamManager,
+            UserManager userManager,
+            ILogger<TeamController> logger, 
+            IMapper mapper, 
+            IHubContext<ChatHub> hubcontext) {
             _logger = logger;
             _teamManager = teamManager;
+            _userManager = userManager;
             _mapper = mapper;
+            _hubcontext = hubcontext;
         }
 
 
@@ -82,7 +92,7 @@ namespace HubAPI.Controllers {
 
         [Authorize]
         [HttpPut("request/{teamName}")]
-        public async Task<IActionResult> JoinRequest([FromRoute]string teamName) {
+        public async Task<IActionResult> JoinRequest([FromRoute] string teamName) {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             if (userId == null) {
@@ -90,9 +100,32 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
+            User user = await _userManager.GetUser(userId);
+            if (user == null) {
+                _logger.LogError("[TEAM: JoinRequest] Unable to load user with Id {userId} from JWT.", userId);
+                return BadRequest("Token error");
+            }
+
             TeamJoinRequest newRequest = await _teamManager.CreateRequest(userId, teamName);
             if (newRequest != null) {
                 _logger.LogInformation("[TEAM: JoinRequest] Request by user with ID '{userId}' to join team '{teamName}' has been created.", newRequest.UserId, newRequest.TeamName);
+            }
+
+            // Alert Team owner if online
+            Team team = await _teamManager.GetTeamByName(teamName);
+            if (team != null) {
+                User teamOwner = await _userManager.GetUser(team.TeamOwner);
+                if (teamOwner != null && teamOwner.Connections != null) {
+                    foreach (ChatConnection c in teamOwner.Connections) {
+                        _logger.LogError("[TEAM: JoinRequest] Alert sent to team owner with ID {teamOwnerId}'.", teamOwner.Id);
+                        await _hubcontext.Clients.Client(c.ConnectionId).SendAsync("Alert", new AlertDto { 
+                            AlertType = "NEW TEAM JOIN REQUEST",
+                            Message = $"{user.Username} has requested to join your team '{team.Name}'"
+                        });
+                    }
+                }
+            } else {
+                _logger.LogError("[TEAM: JoinRequest] Unable to load team with name '{teamName}'.", teamName);
             }
 
             return Ok(_mapper.Map<TeamJoinRequestDto>(newRequest));
@@ -109,14 +142,34 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
-            bool results = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
+            TeamJoinRequest result = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
 
-            if (approve && results) {
+            if (result == null) {
+                _logger.LogError("[TEAM: ApproveOrDenyRequest] Error processing request with ID: {requestId}", requestId);
+                return BadRequest($"Error processing request with ID: {requestId}");
+            }
+
+            User targetUser = await _userManager.GetUser(result.UserId);
+
+            if (targetUser != null && targetUser.Connections != null) {
+                foreach (ChatConnection c in targetUser.Connections) {
+                    _logger.LogError("[TEAM: ApproveOrDenyRequest] Alert sent to team owner with ID {userId}'.", targetUser.Id);
+                    await _hubcontext.Clients.Client(c.ConnectionId).SendAsync("Alert", new AlertDto {
+                        AlertType = (approve) ? "REQUEST APPROVED" : "REQUEST DENIED",
+                        Message = (approve) 
+                            ? $"Your request to join team '{result.TeamName}' has been approved"
+                            : $"Your request to join team '{result.TeamName}' has been denied"
+                    });
+                }
+            }
+
+            if (approve) {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been approved.", requestId);
+
             } else {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been denied.", requestId);
             }
-            return Ok(results);
+            return Ok(_mapper.Map<TeamJoinRequestDto>(result));
         }
 
         [Authorize]

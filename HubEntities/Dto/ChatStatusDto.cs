@@ -4,10 +4,9 @@ using System.ComponentModel.DataAnnotations;
 namespace HubEntities.Dto {
     public class ChatStatusDto {
         [Required]
-        public User User { get; set; }
+        public UserDto User { get; set; }
 
         [Required]
         public string Status { get; set; }
-
     }
 }

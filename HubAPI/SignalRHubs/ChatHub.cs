@@ -10,48 +10,51 @@ using System.Linq;
 using HubDL;
 using HubEntities.Dto;
 using Microsoft.EntityFrameworkCore;
+using HubBL;
+using AutoMapper;
 
 namespace HubAPI {
 
     [Authorize]
     public class ChatHub: Hub {
+        private readonly UserManager _userManager;
+        private readonly ConnectionManager _connectionManager;
+        private readonly IMapper _mapper;
+        public ChatHub(UserManager userManager, ConnectionManager connectionManager, IMapper mapper) {
+            _userManager = userManager;
+            _connectionManager = connectionManager;
+            _mapper = mapper;
+        }
+
         public override Task OnConnectedAsync() {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            /*
-            using (HubDbContext db = new()) {
-                User user = db.Users.Include(u => u.Connections).SingleOrDefault(u => u.Id == userId);
-                if (user == null) {
-                    throw new ArgumentNullException("Unable to load user");
-                }
+            User user = _userManager.GetUser(userId).Result;
+            if (user == null) throw new ArgumentException($"Unable to load user with Id {userId}");
 
-                user.Connections.Add(new() {
-                    ConnectionId = Context.ConnectionId,
-                    Connected = true
-                });
-                db.SaveChanges();
-            }*/
+            user.Connections.Add(new() {
+                ConnectionId = Context.ConnectionId,
+                Connected = true
+            });
+
+            if (!_userManager.SaveUser().Result) {
+                throw new ArgumentException($"Unable to save user with Id {userId}");
+            }
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
-            /*
-            using (HubDbContext db = new()) {
-                ChatConnection connection = db.ChatConnections
-                    .Include(c => c.User)
-                    .Where(c => c.ConnectionId == Context.ConnectionId)
-                    .SingleOrDefault();
-
-                connection.Connected = false;
+            ChatConnection connection = _connectionManager.GetConnection(Context.ConnectionId).Result;
+            if (connection != null) {
                 if (connection.RoomId != null) {
                     Clients.Group(connection.RoomId).SendAsync("Event", new ChatStatusDto() {
-                        User = connection.User,
+                        User = _mapper.Map<UserDto>(connection.User),
                         Status = "LEFT"
                     });
-                    connection.RoomId = null;
                 }
-                db.Remove(connection);
-                db.SaveChanges();
-            }*/
+                if (!_connectionManager.CloseConnection(Context.ConnectionId).Result) {
+                    throw new ArgumentException("Unable to close the connection in the datbase.");
+                }
+            }
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -62,55 +65,32 @@ namespace HubAPI {
         public async Task JoinGameRoomChat(string roomId) {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-            /*
-            using (HubDbContext db = new()) {
-                ChatConnection connection = db.ChatConnections
-                    .Include(c => c.User)
-                    .Where(c => c.ConnectionId == Context.ConnectionId)
-                    .SingleOrDefault();
-                await Clients.Group(connection.RoomId).SendAsync("Event", new ChatStatusDto() {
-                    User = connection.User,
-                    Status = "JOINED"
-                });
-                connection.RoomId = roomId;
-                db.SaveChanges();
-
-                //Get all users with roomId
-                IList<User> usersInRoom = db.ChatConnections
-                    .Include(c => c.User)
-                    .Where(c => c.RoomId == roomId)
-                    .Select(c => c.User)
-                    .ToList();
-
-                foreach(User user in usersInRoom) {
-                    await Clients.Group(roomId).SendAsync("Event", new ChatStatusDto() {
-                        User = user,
-                        Status = "PRESENT"
-                    });
-                }
-            }*/
+            ChatConnection userConnection = await _connectionManager.GetConnection(Context.ConnectionId);
+            if (userConnection == null) {
+                throw new ArgumentException($"Unable to find connection with ID {Context.ConnectionId} in database");
+            }
+            userConnection.RoomId = roomId;
+            await Clients.Group(userConnection.RoomId).SendAsync("Event", new ChatStatusDto() {
+                User = _mapper.Map<UserDto>(userConnection.User),
+                Status = "JOINED"
+            });
+            if (!_userManager.SaveUser().Result) {
+                throw new ArgumentException($"Unable to save connection status for user with ID {userId} joining room {roomId}");
+            }
         }
 
         public async Task LeaveGameRoomChat(string roomId) {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
-            /*
-            using (HubDbContext db = new()) {
-                ChatConnection connection = db.ChatConnections
-                    .Include(c => c.User)
-                    .Where(c => c.ConnectionId == Context.ConnectionId)
-                    .SingleOrDefault();
-
-                if (connection.RoomId != null) {
-                    await Clients.Group(connection.RoomId).SendAsync("Event", new ChatStatusDto() {
-                        User = connection.User,
-                        Status = "LEFT"
-                    });
-                    connection.RoomId = null;
-                }
-
-                db.SaveChanges();
-            }*/
+            ChatConnection userConnection = await _connectionManager.GetConnection(Context.ConnectionId);
+            await Clients.Group(userConnection.RoomId).SendAsync("Event", new ChatStatusDto() {
+                User = _mapper.Map<UserDto>(userConnection.User),
+                Status = "LEFT"
+            });
+            userConnection.RoomId = null;
+            if (!_userManager.SaveUser().Result) {
+                throw new ArgumentException($"Unable to save connection status for user with ID {userId} joining room {roomId}");
+            }
         }
     }
 }
