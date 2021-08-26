@@ -59,7 +59,9 @@ namespace HubAPI {
 
             services.AddCors(builder => {
                 builder.AddDefaultPolicy(policy => {
-                    policy.WithOrigins("http://localhost:4200")
+                    policy.WithOrigins(
+                        "http://localhost:4200", "https://localhost:4200",
+                        "https://revabox.eastus.cloudapp.azure.com", "http://revabox.eastus.cloudapp.azure.com")
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials();

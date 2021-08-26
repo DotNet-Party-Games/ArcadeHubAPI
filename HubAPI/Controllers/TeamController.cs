@@ -128,8 +128,6 @@ namespace HubAPI.Controllers {
                 _logger.LogError("[TEAM: JoinRequest] Unable to load team with name '{teamName}'.", teamName);
             }
 
-            //_hubcontext.Clients.
-
             return Ok(_mapper.Map<TeamJoinRequestDto>(newRequest));
         }
 
@@ -144,14 +142,34 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
-            bool results = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
+            TeamJoinRequest result = await _teamManager.ApproveOrDenyRequest(requestId, userId, approve);
 
-            if (approve && results) {
+            if (result == null) {
+                _logger.LogError("[TEAM: ApproveOrDenyRequest] Error processing request with ID: {requestId}", requestId);
+                return BadRequest($"Error processing request with ID: {requestId}");
+            }
+
+            User targetUser = await _userManager.GetUser(result.UserId);
+
+            if (targetUser != null && targetUser.Connections != null) {
+                foreach (ChatConnection c in targetUser.Connections) {
+                    _logger.LogError("[TEAM: ApproveOrDenyRequest] Alert sent to team owner with ID {userId}'.", targetUser.Id);
+                    await _hubcontext.Clients.Client(c.ConnectionId).SendAsync("Alert", new AlertDto {
+                        AlertType = (approve) ? "REQUEST APPROVED" : "REQUEST DENIED",
+                        Message = (approve) 
+                            ? $"Your request to join team '{result.TeamName}' has been approved"
+                            : $"Your request to join team '{result.TeamName}' has been denied"
+                    });
+                }
+            }
+
+            if (approve) {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been approved.", requestId);
+
             } else {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been denied.", requestId);
             }
-            return Ok(results);
+            return Ok(_mapper.Map<TeamJoinRequestDto>(result));
         }
 
         [Authorize]
