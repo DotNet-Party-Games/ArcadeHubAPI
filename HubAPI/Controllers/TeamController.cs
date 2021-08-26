@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using HubEntities.Dto;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
@@ -18,10 +19,16 @@ namespace HubAPI.Controllers {
         private readonly TeamManager _teamManager;
         private readonly ILogger<TeamController> _logger;
         private readonly IMapper _mapper;
-        public TeamController(TeamManager teamManager, ILogger<TeamController> logger, IMapper mapper) {
+        private readonly IHubContext<ChatHub> _hubcontext;
+        public TeamController(
+            TeamManager teamManager, 
+            ILogger<TeamController> logger, 
+            IMapper mapper, 
+            IHubContext<ChatHub> hubcontext) {
             _logger = logger;
             _teamManager = teamManager;
             _mapper = mapper;
+            _hubcontext = hubcontext;
         }
 
 
@@ -94,6 +101,8 @@ namespace HubAPI.Controllers {
             if (newRequest != null) {
                 _logger.LogInformation("[TEAM: JoinRequest] Request by user with ID '{userId}' to join team '{teamName}' has been created.", newRequest.UserId, newRequest.TeamName);
             }
+
+            //_hubcontext.Clients.
 
             return Ok(_mapper.Map<TeamJoinRequestDto>(newRequest));
         }
