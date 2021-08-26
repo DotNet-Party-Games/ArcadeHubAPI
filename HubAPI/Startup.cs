@@ -78,6 +78,7 @@ namespace HubAPI {
             services.AddScoped<MessageManager>();
             services.AddScoped<UserManager>();
             services.AddScoped<TeamManager>();
+            services.AddScoped<ConnectionManager>();
 
 
             string domain = $"https://{Configuration["Auth0:Domain"]}/";
