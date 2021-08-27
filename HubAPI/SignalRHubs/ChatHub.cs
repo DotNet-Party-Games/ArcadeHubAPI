@@ -64,16 +64,28 @@ namespace HubAPI {
         }
         public async Task JoinGameRoomChat(string roomId) {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+
             ChatConnection userConnection = await _connectionManager.GetConnection(Context.ConnectionId);
             if (userConnection == null) {
                 throw new ArgumentException($"Unable to find connection with ID {Context.ConnectionId} in database");
             }
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
             userConnection.RoomId = roomId;
             await Clients.Group(userConnection.RoomId).SendAsync("Event", new ChatStatusDto() {
                 User = _mapper.Map<UserDto>(userConnection.User),
                 Status = "JOINED"
             });
+
+            IList<User> usersInRoom = await _connectionManager.GetUsersByRoomId(roomId);
+            if (usersInRoom != null) {
+                foreach (User user in usersInRoom) {
+                    await Clients.Client(Context.ConnectionId).SendAsync("Event", new ChatStatusDto() {
+                        User = _mapper.Map<UserDto>(user),
+                        Status = "PRESENT"
+                    });
+                }
+            }
+
             if (!_userManager.SaveUser().Result) {
                 throw new ArgumentException($"Unable to save connection status for user with ID {userId} joining room {roomId}");
             }

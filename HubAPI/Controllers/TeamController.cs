@@ -197,7 +197,7 @@ namespace HubAPI.Controllers {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
             if (userId == null) {
-                _logger.LogError("[TEAM: LeaveTeam] Unable to load userId from JWT.");
+                _logger.LogError("[TEAM: DisbandTeam] Unable to load userId from JWT.");
                 return BadRequest("Token error");
             }
 
