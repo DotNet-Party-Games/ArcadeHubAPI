@@ -151,6 +151,7 @@ namespace HubAPI.Controllers {
 
             User targetUser = await _userManager.GetUser(result.UserId);
 
+            // Notify User that their request has been processed.
             if (targetUser != null && targetUser.Connections != null) {
                 foreach (ChatConnection c in targetUser.Connections) {
                     _logger.LogError("[TEAM: ApproveOrDenyRequest] Alert sent to team owner with ID {userId}'.", targetUser.Id);
@@ -165,12 +166,16 @@ namespace HubAPI.Controllers {
 
             if (approve) {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been approved.", requestId);
+                // Notify team members
+                await NotifyTeam(result.TeamName, "USER JOINED TEAM", $"{targetUser.Username} has joined your team '{result.TeamName}'");
+
 
             } else {
                 _logger.LogInformation("[TEAM: ApproveOrDenyRequest] Request with ID '{requestId}' has been denied.", requestId);
             }
             return Ok(_mapper.Map<TeamJoinRequestDto>(result));
         }
+
 
         [Authorize]
         [HttpPut("leave")]
@@ -182,13 +187,15 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
-            bool results = await _teamManager.LeaveTeam(userId);
+            (Team targetTeam, User targetUser) = await _teamManager.LeaveTeam(userId);
 
-            if (results) {
+            if (targetTeam != null && targetUser != null) {
                 _logger.LogInformation("[TEAM: LeaveTeam] User with ID '{userId}' has successfully left their team.", userId);
+                //Notify all team members
+                await NotifyTeam(targetTeam.Name, "USER LEFT TEAM", $"{targetUser.Username} has left your team '{targetTeam.Name}'");
             }
 
-            return Ok(results);
+            return Ok();
         }
 
         [Authorize]
@@ -201,11 +208,42 @@ namespace HubAPI.Controllers {
                 return BadRequest("Token error");
             }
 
-            bool result = await _teamManager.DisbandTeam(userId, teamName);
-            if (result) {
+            Team targetTeam = await _teamManager.DisbandTeam(userId, teamName);
+            if (targetTeam != null) {
                 _logger.LogInformation("[TEAM: DisbandTeam] Team '{teamName}' has been disbanded by its owner.", teamName);
+                // Notify all team members
+                await NotifyTeam(targetTeam, "TEAM DISBANDED", $"Your team '{targetTeam.Name}' has been disbanded by its owner");
+
             }
-            return Ok(result);
+            return Ok();
+        }
+
+        private async Task NotifyTeam(string teamName, string alertType, string message) {
+            Team targetTeam = await _teamManager.GetTeamByName(teamName);
+
+            if (targetTeam == null || targetTeam.Users == null) return;
+            foreach (User user in targetTeam.Users) {
+                if (user.Connections == null) continue;
+                foreach (ChatConnection connection in user.Connections) {
+                    await _hubcontext.Clients.Client(connection.ConnectionId).SendAsync("Alert", new AlertDto {
+                        AlertType = alertType,
+                        Message = message
+                    });
+                }
+            }
+        }
+
+        private async Task NotifyTeam(Team targetTeam, string alertType, string message) {
+            if (targetTeam == null || targetTeam.Users == null) return;
+            foreach (User user in targetTeam.Users) {
+                if (user.Connections == null) continue;
+                foreach (ChatConnection connection in user.Connections) {
+                    await _hubcontext.Clients.Client(connection.ConnectionId).SendAsync("Alert", new AlertDto {
+                        AlertType = alertType,
+                        Message = message
+                    });
+                }
+            }
         }
     }
 }
