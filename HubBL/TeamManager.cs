@@ -19,23 +19,20 @@ namespace HubBL {
             _joinRequestDB = joinRequestDB;
 
             _teamIncludes = new List<string> {
-                "Users"
+                "Users",
+                "Users.Connections"
             };
         }
 
         public async Task<IList<Team>> GetAllTeams() {
             return await _teamDB.Query(new() {
-                Includes = new List<string> {
-                    "Users"
-                }
+                Includes = _teamIncludes
             });
         }
 
         public async Task<Team> GetTeamByName(string teamName) {
             return await _teamDB.FindSingle(new() {
-                Includes = new List<string> {
-                    "Users"
-                },
+                Includes = _teamIncludes,
                 Conditions = new List<Func<Team, bool>> {
                     t => t.Name == teamName
                 }
@@ -157,7 +154,7 @@ namespace HubBL {
             return request;
         }
 
-        public async Task<bool> LeaveTeam(string userId) {
+        public async Task<(Team, User)> LeaveTeam(string userId) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
 
             User targetUser = await _userDB.FindSingle(new() {
@@ -182,10 +179,12 @@ namespace HubBL {
             targetTeam.Users.Remove(targetUser);
             targetUser.Team = null;
             targetUser.TeamId = null;
-            return await _teamDB.Save();
+            await _teamDB.Save();
+
+            return (targetTeam, targetUser);
         }
 
-        public async Task<bool> DisbandTeam(string userId, string teamName) {
+        public async Task<Team> DisbandTeam(string userId, string teamName) {
             if (userId == null) throw new ArgumentException("Missing parameter userId");
             if (teamName == null) throw new ArgumentException("Missing parameter teamName");
 
@@ -200,7 +199,8 @@ namespace HubBL {
 
             //Delete team if the user is the owner
             if (targetTeam.TeamOwner != null && targetTeam.TeamOwner != userId) throw new ArgumentException($"User '{userId}' is not the owner of this team");
-            return await _teamDB.Delete(targetTeam);
+            await _teamDB.Delete(targetTeam);
+            return targetTeam;
         }
     }
 }
