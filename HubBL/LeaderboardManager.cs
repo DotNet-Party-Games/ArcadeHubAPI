@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HubDL;
@@ -69,7 +70,12 @@ namespace HubBL {
 
             if (targetLeaderboard == null) throw new ArgumentException($"A leaderboard for game with name '{gameName}' does not exist");
 
-            targetLeaderboard.Scores.Add(score);
+            TeamScore existingScore = targetLeaderboard.Scores.Where(s => s.TeamName == score.TeamName).SingleOrDefault();
+            if (existingScore == null) {
+                targetLeaderboard.Scores.Add(score);
+            } else {
+                existingScore.Score += score.Score;
+            }
 
             await _teamLeaderboardDB.Save();
             return targetLeaderboard;
