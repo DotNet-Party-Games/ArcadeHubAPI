@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using HubBL;
 using Microsoft.Extensions.Logging;
 using HubEntities.Database;
+using HubEntities.Dto;
 
 namespace HubAPI.Controllers {
     [Route("[controller]")]
@@ -44,8 +45,11 @@ namespace HubAPI.Controllers {
         }
 
         [HttpPost("team/{gameType}")]
-        public async Task<IActionResult> SubmitTeamScore([FromRoute] string gameType, [FromBody] TeamScore score) {
-            TeamLeaderboard teamLeaderboard = await _leaderboardManager.SubmitTeamScore( gameType, score);
+        public async Task<IActionResult> SubmitTeamScore([FromRoute] string gameType, [FromBody] TeamScoreDto score) {
+            TeamLeaderboard teamLeaderboard = await _leaderboardManager.SubmitTeamScore(gameType, new TeamScore {
+                TeamName = score.TeamName,
+                Score = score.Score
+            });
             if (teamLeaderboard != null) {
                 _logger.LogInformation("[LEADERBOARD: SubmitTeamScore] Team Score successfully submitted for game type '{gameType}'.", gameType);
             }

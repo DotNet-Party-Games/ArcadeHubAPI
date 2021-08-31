@@ -209,20 +209,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dotnetroyalsocket
+  name: dotnetroyalesocket
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dotnetroyalsocket
+      app: dotnetroyalesocket
   template:
     metadata:
       labels:
-        app: dotnetroyalsocket
+        app: dotnetroyalesocket
     spec:
       terminationGracePeriodSeconds: 30
       containers:
-      - name: dotnetroyalsocket
+      - name: dotnetroyalesocket
         image: 210628utanet/dotnetroyalsocket:latest
         imagePullPolicy: "Always"
         resources:
@@ -238,13 +238,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: dotnetroyalsocket
+  name: dotnetroyalesocket
 spec:
   ports:
     - targetPort: 3000
       port: 7002
   selector:
-    app: dotnetroyalsocket
+    app: dotnetroyalesocket
 ---
 #hubapi
 apiVersion: apps/v1

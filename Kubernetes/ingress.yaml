@@ -9,13 +9,18 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     # to use regex on my paths
     nginx.ingress.kubernetes.io/use-regex: "true"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     # also something about the path, rewriting the target, modifying the url
     nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE, CREATE"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:4200"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/websocket-services: dotnetroyalesocket
+    nginx.org/websocket-services: dotnetroyalesocket
 spec:
   tls:
   - hosts:
@@ -70,7 +75,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: dotnetroyalsocket
+                name: dotnetroyalesocket
                 port:
                   number: 7002
           #hubapi
