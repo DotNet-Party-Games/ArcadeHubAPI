@@ -95,13 +95,15 @@ namespace HubAPI {
             string userId = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
             ChatConnection userConnection = await _connectionManager.GetConnection(Context.ConnectionId);
-            await Clients.Group(userConnection.RoomId).SendAsync("Event", new ChatStatusDto() {
-                User = _mapper.Map<UserDto>(userConnection.User),
-                Status = "LEFT"
-            });
-            userConnection.RoomId = null;
-            if (!_userManager.SaveUser().Result) {
-                throw new ArgumentException($"Unable to save connection status for user with ID {userId} joining room {roomId}");
+            if (userConnection != null && userConnection.RoomId != null) {
+                await Clients.Group(userConnection.RoomId).SendAsync("Event", new ChatStatusDto() {
+                    User = _mapper.Map<UserDto>(userConnection.User),
+                    Status = "LEFT"
+                });
+                userConnection.RoomId = null;
+                if (!_userManager.SaveUser().Result) {
+                    throw new ArgumentException($"Unable to save connection status for user with ID {userId} joining room {roomId}");
+                }
             }
         }
     }
